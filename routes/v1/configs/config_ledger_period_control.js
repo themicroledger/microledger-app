@@ -403,7 +403,7 @@ router.get("/get-all", authUser, ledgerPeriodControlMiddleware.canRead, async (r
             }
         }
 
-        let assets = await LedgerPeriodControlModel.find(filter);
+        let assets = await LedgerPeriodControlModel.find(filter).populate(['ledgerId', 'accountingPeriod']);
         br.sendSuccess(res, assets);
     } catch (error) {
         logger.error(error);
@@ -434,7 +434,7 @@ router.get("/get/:id", authUser, ledgerPeriodControlMiddleware.canRead, isValidP
         let assetDetails = await LedgerPeriodControlModel.find({
             _id: id,
             isDeleted: false
-        });
+        }).populate(['ledgerId', 'accountingPeriod']);
 
         if (assetDetails.length === 0) {
             return br.sendNotSuccessful(res, `Ledger Period Control with id => ${id} not found or deleted!`);
