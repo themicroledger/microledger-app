@@ -121,7 +121,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                     actionDate: new Date(),
                     actionBy: ib.createdByUser,
                 }, {session: session});
-                //await auditData.save();
+                await auditData.save();
 
                 await session.commitTransaction();
 
