@@ -463,7 +463,7 @@ router.put("/update/:id", authUser, ledgerLookupMiddleware.canUpdate, isValidPar
         ledgerEndDate: 'string',
         ledgerType: 'string',
         parentLedger: 'nullable',
-        ruleOrder: 'string',
+        ruleOrder: 'integer',
         comments: 'string',
     });
 
