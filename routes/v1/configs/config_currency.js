@@ -184,7 +184,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
 
                 await session.commitTransaction();
 
-                callback(counter, false, 'Currency added successfully!', ib);
+                callback(counter, true, 'Currency added successfully!', ib);
 
             } catch (error) {
                 if (session.inTransaction()) {

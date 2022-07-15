@@ -41,12 +41,12 @@ const refRateDescMiddleware = require('../../../middleware/config_reference_rate
  *                              type: string
  *                              default: SOFR
  *                          termUnit:
- *                              type: integer
- *                              default: 0
- *                          termLength:
  *                              type: string
  *                              default: Day
  *                              enum: [Month, Years, Days]
+ *                          termLength:
+ *                              type: integer
+ *                              default: 0
  *                          marketIdentifier:
  *                              type: string
  *                              default: SOFR
@@ -104,9 +104,9 @@ function insertData(req, inputData, counter = 0, callback, onError) {
         bankHoliday: 'required|string',
         currency: 'required|string',
         referenceRate: 'required|string',
-        termLength: 'required|integer',
+        termLength: 'required|string',
         referenceRateName: 'required|string',
-        termUnit: 'required|string',
+        termUnit: 'required|integer',
         marketIdentifier: 'string',
         pricingSource: 'string',
         rateConvention: 'required|string',
@@ -123,8 +123,8 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                     currency: inputData.currency.toString().trim(),
                     referenceRate: inputData.referenceRate.toString().trim(),
                     referenceRateName: inputData.referenceRateName.toString().trim(),
-                    termLength: parseInt(inputData.termLength.toString().trim()),
-                    termUnit: inputData.termUnit.toString().trim(),
+                    termLength: inputData.termLength.toString().trim(),
+                    termUnit: parseInt(inputData.termUnit.toString().trim()),
                     marketIdentifier: inputData.marketIdentifier !== undefined ? inputData.marketIdentifier.toString().trim() : '',
                     pricingSource: inputData.pricingSource !== undefined ? inputData.pricingSource.toString().trim() : '',
                     rateConvention: inputData.rateConvention.toString().trim(),
@@ -288,8 +288,8 @@ router.put("/update/:id", authUser, refRateDescMiddleware.canUpdate, isValidPara
         currency: 'string',
         referenceRate: 'string',
         referenceRateName: 'string',
-        termUnit: 'integer',
-        termLength: 'string',
+        termUnit: 'string',
+        termLength: 'integer',
         marketIdentifier: 'string',
         pricingSource: 'string',
         rateConvention: 'string',
@@ -349,12 +349,12 @@ router.put("/update/:id", authUser, refRateDescMiddleware.canUpdate, isValidPara
                     data.referenceRateName = req.body.referenceRateName.toString().trim();
                 }
 
-                if (req.body.termLength !== undefined) {
-                    data.termLength = parseInt(req.body.termLength);
+                if (req.body.termUnit !== undefined) {
+                    data.termUnit = parseInt(req.body.termUnit);
                 }
 
-                if (req.body.termUnit !== undefined && helper.isObjectContainsKey(helper.sysConst.referenceTermUnit, req.body.termUnit)) {
-                    data.termUnit = req.body.termUnit.toString().trim();
+                if (req.body.termLength !== undefined && helper.isObjectContainsKey(helper.sysConst.referenceTermLength, req.body.termLength)) {
+                    data.termLength = req.body.termLength.toString().trim();
                 }
 
                 if (req.body.marketIdentifier !== undefined) {

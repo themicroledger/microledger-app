@@ -26,7 +26,7 @@ const processType = {
     BulkInsert: 'BulkInsert',
     BulkUpdate: 'BulkUpdate'
 };
-const referenceTermUnit = {
+const referenceTermLength = {
     Month: 'Month', Years: 'Years', Days: 'Days'
 }
 const referenceRateConvention = {
@@ -63,7 +63,7 @@ const helper = {
         permissionAccessTypes,
         processStatus,
         processType,
-        referenceTermUnit,
+        referenceTermLength,
         referenceRateConvention,
         transactionCodeLifeCyclePeriodTypes,
         transactionCodeTransactionLevels,

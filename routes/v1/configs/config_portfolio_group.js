@@ -313,7 +313,7 @@ router.put("/update/:id", authUser, portfolioGroupMiddleware.canUpdate, isValidP
                 }
 
                 if (req.body.portfolioGroupType !== undefined) {
-                    data.portfolioGroup = req.body.portfolioGroupType.toString().trim();
+                    data.portfolioGroupType = req.body.portfolioGroupType.toString().trim();
 
                     if (!helper.isValidObjectId(data.portfolioGroupType)) {
                         return br.sendNotSuccessful(res, 'portfolioGroupType is not a valid Portfolio Type Id!');
@@ -322,13 +322,13 @@ router.put("/update/:id", authUser, portfolioGroupMiddleware.canUpdate, isValidP
                             .find({_id: data.portfolioGroupType, isDeleted: false,});
 
                         if (itemDetails.length === 0) {
-                            return br.sendNotSuccessful(res, 'Invalid Portfolio Group Id for portfolioGroupType => ' + data.portfolioGroupType + '!');
+                            return br.sendNotSuccessful(res, 'Invalid Portfolio Type Id for portfolioGroupType => ' + data.portfolioGroupType + '!');
                         }
                     }
                 }
 
                 if (req.body.company !== undefined) {
-                    data.portfolioGroup = req.body.company.toString().trim();
+                    data.company = req.body.company.toString().trim();
 
                     if (!helper.isValidObjectId(data.company)) {
                         return br.sendNotSuccessful(res, 'company is not a valid Ib Company Id!');
@@ -392,7 +392,7 @@ router.put("/update/:id", authUser, portfolioGroupMiddleware.canUpdate, isValidP
                         + '` and Name => `'
                         + configFind[0].name
                         + '` and Portfolio Type => `'
-                        + configFind[0].portfolioGroupType.name
+                        + configFind[0].portfolioGroupType.portfolioType
                         + '` and Company => `'
                         + configFind[0].company.name + ' !',
                         {});
