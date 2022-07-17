@@ -311,8 +311,7 @@ router.put("/update/:id", authUser, roundingTableMiddleware.canUpdate, isValidPa
 
                 await RoundingTableModel.updateOne({_id: id}, data).session(session);
 
-                let configItemDetails = await RoundingTableModel.find({_id: id, isDeleted: false})
-                    .populate('bankHolidays').session(session);
+                let configItemDetails = await RoundingTableModel.find({_id: id, isDeleted: false}).session(session);
                 configItemDetails = configItemDetails[0];
 
                 const auditData = new RoundingTableAuditModel({

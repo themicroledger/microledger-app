@@ -341,7 +341,7 @@ router.put("/update/:id", authUser, ibCompanyMiddleware.canUpdate, isValidParamI
                         return br.sendNotSuccessful(res, 'party is not a valid Ib Party Id!');
                     } else {
                         const itemDetails = await IbParty
-                            .find({_id: data.company, isDeleted: false,});
+                            .find({_id: data.party, isDeleted: false,});
 
                         if (itemDetails.length === 0) {
                             return br.sendNotSuccessful(res, 'Invalid Ib Party Id for party => ' + data.party + '!');

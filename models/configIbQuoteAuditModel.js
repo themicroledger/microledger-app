@@ -3,10 +3,7 @@ const accessTypes = require('../helper/helper').sysConst.permissionAccessTypes;
 
 const configIbQuoteAuditSchema = new mongoose.Schema({
     quoteId: {
-        type: Number,
-        unique: true,
-        min: 1,
-        required: true
+        type: Number
     },
     quote : {
         type: String,

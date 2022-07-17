@@ -313,7 +313,7 @@ router.put("/update/:id", authUser, transactionCodeMiddleware.canUpdate, isValid
                 }
 
                 if (req.body.lifeCyclePeriodType !== undefined) {
-                    data.lifeCyclePeriodType = moment(req.body.lifeCyclePeriodType);
+                    data.lifeCyclePeriodType = req.body.lifeCyclePeriodType.toString().trim();
 
                     if(!helper.isObjectContainsKey(helper.sysConst.transactionCodeLifeCyclePeriodTypes, data.lifeCyclePeriodType)){
                         return br.sendNotSuccessful(res,'lifeCyclePeriodType is not valid!');

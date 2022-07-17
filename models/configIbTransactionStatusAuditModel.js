@@ -3,10 +3,7 @@ const accessTypes = require('../helper/helper').sysConst.permissionAccessTypes;
 
 const configIbTransactionStatusAuditSchema = new mongoose.Schema({
     transactionId: {
-        type: Number,
-        unique: true,
-        min: 1,
-        required: true
+        type: Number
     },
     transactionStatus : {
         type: String,

@@ -41,12 +41,12 @@ const refRateDescMiddleware = require('../../../middleware/config_reference_rate
  *                              type: string
  *                              default: SOFR
  *                          termUnit:
+ *                              type: integer
+ *                              default: 0
+ *                          termLength:
  *                              type: string
  *                              default: Day
  *                              enum: [Month, Years, Days]
- *                          termLength:
- *                              type: integer
- *                              default: 0
  *                          marketIdentifier:
  *                              type: string
  *                              default: SOFR
@@ -151,6 +151,14 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                     if (itemDetails.length === 0) {
                         return callback(counter, false, 'Invalid Currency Id for currency => ' + data.currency + '!');
                     }
+                }
+
+                if(!helper.isObjectContainsKey(helper.sysConst.referenceTermLength, data.termLength)){
+                    return callback(counter, false, 'Invalid termLength!');
+                }
+
+                if(!helper.isObjectContainsKey(helper.sysConst.referenceRateConvention, data.termLength)){
+                    return callback(counter, false, 'Invalid rateConvention!');
                 }
 
                 const configFind = await RefRateDescModel.find({
@@ -288,8 +296,8 @@ router.put("/update/:id", authUser, refRateDescMiddleware.canUpdate, isValidPara
         currency: 'string',
         referenceRate: 'string',
         referenceRateName: 'string',
-        termUnit: 'string',
-        termLength: 'integer',
+        termUnit: 'integer',
+        termLength: 'string',
         marketIdentifier: 'string',
         pricingSource: 'string',
         rateConvention: 'string',
@@ -353,8 +361,12 @@ router.put("/update/:id", authUser, refRateDescMiddleware.canUpdate, isValidPara
                     data.termUnit = parseInt(req.body.termUnit);
                 }
 
-                if (req.body.termLength !== undefined && helper.isObjectContainsKey(helper.sysConst.referenceTermLength, req.body.termLength)) {
+                if (req.body.termLength !== undefined) {
                     data.termLength = req.body.termLength.toString().trim();
+
+                    if(!helper.isObjectContainsKey(helper.sysConst.referenceTermLength, data.termLength)){
+                        return br.sendNotSuccessful(res, 'Invalid termLength!');
+                    }
                 }
 
                 if (req.body.marketIdentifier !== undefined) {
@@ -365,8 +377,12 @@ router.put("/update/:id", authUser, refRateDescMiddleware.canUpdate, isValidPara
                     data.pricingSource = req.body.pricingSource.toString().trim();
                 }
 
-                if (req.body.rateConvention !== undefined && helper.isObjectContainsKey(helper.sysConst.referenceRateConvention, req.body.rateConvention)) {
+                if (req.body.rateConvention !== undefined) {
                     data.rateConvention = req.body.rateConvention.toString().trim();
+
+                    if(!helper.isObjectContainsKey(helper.sysConst.referenceRateConvention, data.termLength)){
+                        return br.sendNotSuccessful(res, 'Invalid rateConvention!');
+                    }
                 }
 
                 let configFind = await RefRateDescModel.find({

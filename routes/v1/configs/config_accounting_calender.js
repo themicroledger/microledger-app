@@ -348,15 +348,12 @@ router.put("/update/:id", authUser, accountingCalenderMiddleware.canUpdate, isVa
                     _id: {
                         $nin: id
                     },
-                    id: data.id !== undefined
-                        ? data.id
-                        : configItem.securityId,
-                    name: data.name !== undefined
-                        ? data.name
-                        : configItem.name,
-                    holidayCalender: data.holidayCalender !== undefined
-                        ? data.holidayCalender
-                        : configItem.holidayCalender
+                    acId: data.acId !== undefined
+                        ? data.acId
+                        : configItem.acId,
+                    acName: data.acName !== undefined
+                        ? data.acName
+                        : configItem.acName
                 });
 
                 if (configFind.length > 0) {
