@@ -45,7 +45,7 @@ const refRateDescMiddleware = require('../../../middleware/config_reference_rate
  *                              default: 0
  *                          termLength:
  *                              type: string
- *                              default: Day
+ *                              default: Days
  *                              enum: [Month, Years, Days]
  *                          marketIdentifier:
  *                              type: string
@@ -157,7 +157,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                     return callback(counter, false, 'Invalid termLength!');
                 }
 
-                if(!helper.isObjectContainsKey(helper.sysConst.referenceRateConvention, data.termLength)){
+                if(!helper.isObjectContainsKey(helper.sysConst.referenceRateConvention, data.rateConvention)){
                     return callback(counter, false, 'Invalid rateConvention!');
                 }
 
@@ -271,7 +271,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
  *                              default: 0
  *                          termLength:
  *                              type: string
- *                              default: Day
+ *                              default: Days
  *                              enum: [Month, Years, Days]
  *                          marketIdentifier:
  *                              type: string
@@ -380,7 +380,7 @@ router.put("/update/:id", authUser, refRateDescMiddleware.canUpdate, isValidPara
                 if (req.body.rateConvention !== undefined) {
                     data.rateConvention = req.body.rateConvention.toString().trim();
 
-                    if(!helper.isObjectContainsKey(helper.sysConst.referenceRateConvention, data.termLength)){
+                    if(!helper.isObjectContainsKey(helper.sysConst.referenceRateConvention, data.rateConvention)){
                         return br.sendNotSuccessful(res, 'Invalid rateConvention!');
                     }
                 }
