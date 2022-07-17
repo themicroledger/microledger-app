@@ -340,7 +340,7 @@ router.put("/update/:id", authUser, transactionCodeMiddleware.canUpdate, isValid
                 }
 
                 if (req.body.transactionLevel !== undefined) {
-                    data.transactionLevel = moment(req.body.transactionLevel);
+                    data.transactionLevel = req.body.transactionLevel.toString().trim();
 
                     if(!helper.isObjectContainsKey(helper.sysConst.transactionCodeTransactionLevels, data.transactionLevel)){
                         return br.sendNotSuccessful(res,'transactionLevel is not valid!');

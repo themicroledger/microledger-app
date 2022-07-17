@@ -528,6 +528,40 @@ router.get("/get-all", authUser, ibExchangeMiddleware.canRead, async (req, res) 
 
 /**
  * @swagger
+ * /api/v1/config/ib-exchange/get-all/for/holiday-calender/{id}:
+ *  get:
+ *      summary: Get all Ib Exchange got any Holiday Calender
+ *      tags: [Config-Ib Exchange]
+ *      parameters:
+ *      - name: id
+ *        in: path
+ *        description: Bank Calender Holiday Id
+ *        default: 6287f9cc5f9120bbbbc36f59
+ *      responses:
+ *          200:
+ *              description: Success
+ *          default:
+ *              description: Default response for this api
+ */
+router.get("/get-all/for/holiday-calender/:id", authUser, ibExchangeMiddleware.canRead, isValidParamId, async (req, res) => {
+    try {
+        const id = req.validParamId;
+
+        let filter = {
+            holidayCalender: id,
+            isDeleted: false,
+        }
+
+        let assets = await IbExchangeModel.find(filter).populate('holidayCalender');
+        br.sendSuccess(res, assets);
+    } catch (error) {
+        logger.error(error);
+        br.sendServerError(res, {});
+    }
+});
+
+/**
+ * @swagger
  * /api/v1/config/ib-exchange/get/{id}:
  *  get:
  *      summary: get Ib Exchange details by id
