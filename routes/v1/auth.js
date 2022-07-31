@@ -57,7 +57,7 @@ router.post("/login", (req, res) => {
                         const token = helper.generateToken({
                             email: loginUser[0].email
                         });
-                        res.send(helper.baseResponse.withSuccess('Login successful', {
+                        br.sendSuccess(req, {
                             userData: {
                                 id: loginUser[0]._id,
                                 firstName: loginUser[0].firstName,
@@ -70,7 +70,7 @@ router.post("/login", (req, res) => {
                                 isVerified: loginUser[0].isVerified,
                             },
                             token: token
-                        }));
+                        }, 'Login successful');
                     }else{
                         br.sendNotSuccessful(res,'Incorrect user password!');
                     }
@@ -79,7 +79,7 @@ router.post("/login", (req, res) => {
         });
     } catch (error) {
         logger.error(error);
-        helper.baseResponse.serverError(error, res);
+        br.serverError(error, res);
     }
 });
 

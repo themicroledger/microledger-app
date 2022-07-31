@@ -39,52 +39,168 @@ const configLedgerLookupSchema = new mongoose.Schema({
         required: true,
         ref : "config_ib_exchanges",
     },
-    isActive : {
-        type: Boolean,
-        required: true,
-        default: true
-    },
-    chartOfAccountsReference : {
-        type: String
-    },
-    clientSpecificField1 : {
-        type: String
-    },
-    clientSpecificField2 : {
-        type: String
-    },
-    accountingCalender : {
+    quoted : {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        ref : "config_accounting_calenders",
+        ref : "config_ib_quotes",
     },
-    ledgerStartDate : {
+    minTradeVolume : {
+        required: true,
+        type: Number,
+    },
+    volume : {
+        required: true,
+        type: Number,
+    },
+    issuer : {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref : "config_ib_parties",
+    },
+    issueDate: {
+        type: Date
+    },
+    issuePrice: {
+        required: true,
+        type: Date
+    },
+    redemptionPrice:{
+        required: true,
+        type: Number
+    },
+    redemptionCurrency:{
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref : "config_currencies",
+    },
+    interestType:{
+        type: mongoose.Schema.Types.ObjectId,
+        default: null,
+        ref : "config_ib_interest_types",
+    },
+    couponRate : {
+        type: String,
+        required: true
+    },
+    maturityDate : {
         type: Date,
         required: true
     },
-    ledgerEndDate : {
-        type: Date,
+    structure:{
+        type: mongoose.Schema.Types.ObjectId,
+        default: null,
+        ref : "config_ib_structures",
+    },
+    firstRedemptionDate: {
+        type: Date
+    },
+    couponTerm : {
+        type: Number,
         required: true
     },
-    ledgerType : {
+    couponTermUnit : {
         type: String,
         required: true,
-        default: sysConst.ledgerTypes.Parent,
-        enum: sysConst.ledgerTypes
+        enum: sysConst.referenceTermLength
     },
-    parentLedger:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref : "config_ledger_lookups",
-        default: null
-    },
-    ruleOrder:{
+    redemptionTerm : {
         type: Number,
-        max: 99,
-        min: 0,
-        default: 0,
         required: true
     },
-    comments : {
+    redemptionTermUnit : {
+        type: String,
+        required: true,
+        enum: sysConst.referenceTermLength
+    },
+    inceptionRedemptionRate: {
+        type: String
+    },
+    currentPoolFactor:{
+        type: String
+    },
+    firstCouponPaymentDate:{
+        type:Date
+    },
+    quotation:{
+        type: mongoose.Schema.Types.ObjectId,
+        default: null,
+        ref : "config_ib_quotes",
+    },
+    settlementDays : {
+        type: Number
+    },
+    quoteType : {
+        type: Number //Possible values: 0 = Others, 1= Per unit, 2= Percent, 3=Per mile, 4= Points, 5=Pips
+    },
+    quotingLotSize : {
+        type: Number,
+    },
+    quotingFaceValue : {
+        type: Number,
+    },
+    couponConventionDayCount : {
+        type: Number,
+    },
+    couponConventionPaymentDayConvention : {
+        type: Date,
+    },
+    couponConventionTreasuryTermCoupon : {
+        type: Boolean,
+        default: false
+    },
+    couponConventionEndOfMonthConvention : {
+        type: Date,
+    },
+    couponConventionTreasuryTermCouponBase : {
+        type: Boolean,
+        default: false
+    },
+    couponConventionHolidayAdjustedCouponFlag : {
+        type: Boolean,
+        default: false
+    },
+    couponConventionPaymentType : {
+        type: String,
+    },
+    couponConventionFixedRateDeCompounding : {
+        type: Boolean,
+        default: false
+    },
+    couponConventionInclExclOneDay : {
+        type: Boolean,
+        default: false
+    },
+    couponConventionSequenceConvention : {
+        type: String,
+    },
+    oddCouponsAndRedempOddConvLastCoupon : {
+        type: String,
+        enum: ['Regular', 'Irregular'],
+        default: null
+    },
+    oddCouponsAndRedempOddConvLastRedeption : {
+        type: String,
+        enum: ['Regular', 'Irregular'],
+        default: null
+    },
+    sequenceConventionRedemption : {
+        type: String,
+    },
+    couponConventionsDayCount : {
+        type: String,
+    },
+    accruedInterestConventionsInterestType : {
+        type: Boolean,
+        default: false
+    },
+    accruedInterestConventionsTreasuryProduct : {
+        type: Boolean,
+        default: false
+    },
+    accruedInterestConventionsDayCountConvention : {
+        type: String
+    },
+    accruedInterestConventionsCalculationMethod : {
         type: String
     },
     changedByUser: {
