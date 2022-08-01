@@ -370,7 +370,16 @@ router.put("/update/:id", authUser, ibExchangeMiddleware.canUpdate, isValidParam
                 }
 
                 if (req.body.exchangeClientSpecificCodes !== undefined && Array.isArray(req.body.exchangeClientSpecificCodes)) {
-                    data.exchangeClientSpecificCodes = req.body.exchangeClientSpecificCodes;
+                    let codes = [];
+                    data.exchangeClientSpecificCodes.forEach((item) => {
+                        if(item.key !== undefined && item.val !== undefined){
+                            codes.push({
+                                key: item.key,
+                                val: item.val
+                            });
+                        }
+                    });
+                    data.exchangeClientSpecificCodes = codes;
                 }
 
                 let configFind = await IbExchangeModel.find({

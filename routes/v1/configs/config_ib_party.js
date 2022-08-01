@@ -101,6 +101,17 @@ const ibPartyMiddleware = require('../../../middleware/config_ib_party_middlewar
  *                          isItAsset:
  *                              type: bool
  *                              default: false
+ *                          additionPartyData:
+ *                              type: array
+ *                              items:
+ *                                  type: object
+ *                                  properties:
+ *                                      name:
+ *                                          type: String
+ *                                          default: additional field 1
+ *                                      value:
+ *                                          type: String
+ *                                          default: field value
  *      responses:
  *          200:
  *              description: Success
@@ -205,6 +216,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                     currency: inputData.currency !== undefined && inputData.currency !== null && inputData.currency.length > 0 ? inputData.currency.toString().trim() : null,
                     fromDate: inputData.fromDate !== undefined ? new Date(inputData.fromDate) : null,
                     isItAsset: inputData.isItAsset !== undefined ? helper.getBoolean(inputData.isItAsset) : false,
+                    additionPartyData: []
                 };
 
                 const configFind = await IbPartyModel.find({
@@ -247,6 +259,19 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                     }
                 }
 
+                if(inputData.additionPartyData !== undefined && Array.isArray(inputData.additionPartyData)){
+                    let additionalData = [];
+                    inputData.additionPartyData.forEach((item) => {
+                        if(item.name !== undefined && item.value !== undefined){
+                            additionalData.push({
+                                name: item.name,
+                                value: item.value
+                            });
+                        }
+                    });
+                    data.additionPartyData = additionalData;
+                }
+
                 await session.startTransaction();
 
                 const ib = new IbPartyModel({
@@ -274,6 +299,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                     currency: data.currency,
                     fromDate: data.fromDate,
                     isItAsset: data.isItAsset,
+                    additionPartyData: data.additionPartyData,
                     createdByUser: req.appCurrentUserData._id,
                 }, {session: session});
                 await ib.save();
@@ -303,6 +329,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                     currency: ib.currency,
                     fromDate: ib.fromDate,
                     isItAsset: ib.isItAsset,
+                    additionPartyData: ib.additionPartyData,
                     changedByUser: ib.changedByUser,
                     changedDate: ib.changedDate,
                     createdByUser: ib.createdByUser,
