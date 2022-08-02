@@ -57,7 +57,7 @@ router.post("/login", (req, res) => {
                         const token = helper.generateToken({
                             email: loginUser[0].email
                         });
-                        br.sendSuccess(req, {
+                        br.sendSuccess(res, {
                             userData: {
                                 id: loginUser[0]._id,
                                 firstName: loginUser[0].firstName,
