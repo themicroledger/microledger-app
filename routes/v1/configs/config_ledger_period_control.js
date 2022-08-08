@@ -5,7 +5,7 @@ const helper = require("../../../helper/helper");
 const logger = require('../../../helper/logger');
 const br = helper.baseResponse;
 const router = new express.Router();
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const LedgerLookupModel = require('../../../models/configLedgerLookupModel');
 const AccountingPeriodDefinitionModel = require('../../../models/configAccountingPeriodDefinitionModel');
 const LedgerPeriodControlModel = require('../../../models/configLedgerPeriodControlModel');
@@ -76,7 +76,7 @@ router.post("/add", authUser, ledgerPeriodControlMiddleware.canCreate, (req, res
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, ledgerPeriodControlMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, ledgerPeriodControlMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
     await processBulkInsert(req, res, 'Ledger Period Control', insertData);
 });
 

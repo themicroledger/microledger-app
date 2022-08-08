@@ -54,6 +54,23 @@ const ledgerPeriodStatus = {
     Open: 'Open',
     Close: 'Closed'
 }
+const lastCoupon = {
+    Regular: 'Regular',
+    Irregular: 'Irregular'
+}
+const compoundingConvention = {
+    Compound: 'Compound',
+    CompoundedYield: 'CompoundedYield'
+}
+const spreadConventionOrCompounding = {
+    CompoundAndAdd: 'Compound and Add',
+    AddAndCompound: 'Add and Compound',
+    Flat: 'Flat'
+}
+const putCall = {
+    Put: 'Put',
+    Call: 'Call'
+}
 
 const helper = {
     sysConst: {
@@ -70,7 +87,11 @@ const helper = {
         acPeriodUnit,
         ledgerTypes,
         periodTypes,
-        ledgerPeriodStatus
+        ledgerPeriodStatus,
+        lastCoupon,
+        compoundingConvention,
+        spreadConventionOrCompounding,
+        putCall
     },
     generateTokenWithPayLoad: (email, userId, secondsRemaining = '12h') => {
         return jwt.sign(
@@ -117,11 +138,11 @@ const helper = {
         }
     },
     isObjectContainsKey: (obj, val) => {
-        if(val === undefined || val === null) {
+        if (val === undefined || val === null) {
             return false;
         }
         let keys = Object.keys(obj);
-        for(let key in keys){
+        for (let key in keys) {
             if (obj[keys[key]] === val) {
                 return true;
             }

@@ -4,7 +4,7 @@ const helper = require("../../../helper/helper");
 const logger = require('../../../helper/logger');
 const br = helper.baseResponse;
 const router = new express.Router();
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const IbParty = require('../../../models/configIbPartyModel');
 const IbCompanyModel = require('../../../models/configIbCompanyModel');
 const IbCompanyAuditModel = require('../../../models/configIbCompanyAuditModel');
@@ -101,7 +101,7 @@ router.post("/add", authUser, ibCompanyMiddleware.canCreate, (req, res) => {
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, ibCompanyMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, ibCompanyMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
     await processBulkInsert(req, res, 'Ib Company', insertData);
 });
 

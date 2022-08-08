@@ -4,7 +4,7 @@ const router = new express.Router();
 const json2csv = require('json2csv').parse;
 const helper = require("../../../helper/helper");
 const br = helper.baseResponse;
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const IbAssetClassModel = require('../../../models/configIbAssetClassModel');
 const IbAssetClassAuditModel = require('../../../models/configIbAssetClassAuditModel');
 const {processBulkInsert} = require('../helper/process_bulk_insert');
@@ -71,7 +71,7 @@ router.post("/add", authUser, ibAssetMiddleware.canCreate, (req, res) => {
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, ibAssetMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, ibAssetMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
     await processBulkInsert(req, res, 'Ib Asset', insertData);
 });
 

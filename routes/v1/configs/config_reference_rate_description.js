@@ -4,7 +4,7 @@ const helper = require("../../../helper/helper");
 const logger = require('../../../helper/logger');
 const br = helper.baseResponse;
 const router = new express.Router();
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const CalenderOrBankHolidayModel = require('../../../models/configCalenderOrBankHolidayModel');
 const CurrencyModel = require('../../../models/configCurrencyModel');
 const RefRateDescModel = require('../../../models/configReferenceRatesDescriptionModel');
@@ -95,7 +95,7 @@ router.post("/add", authUser, refRateDescMiddleware.canCreate, (req, res) => {
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, refRateDescMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, refRateDescMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
     await processBulkInsert(req, res, 'Reference Rate Description', insertData);
 });
 

@@ -5,7 +5,7 @@ const helper = require("../../../helper/helper");
 const logger = require('../../../helper/logger');
 const br = helper.baseResponse;
 const router = new express.Router();
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const IbAssetModel = require('../../../models/configIbAssetClassModel');
 const TransactionCodeModel = require('../../../models/configTransactionCodeModel');
 const TransactionCodeAuditModel = require('../../../models/configTransactionCodeAuditModel');
@@ -96,7 +96,7 @@ router.post("/add", authUser, transactionCodeMiddleware.canCreate, (req, res) =>
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, transactionCodeMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, transactionCodeMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
     await processBulkInsert(req, res, 'Transaction Code', insertData);
 });
 

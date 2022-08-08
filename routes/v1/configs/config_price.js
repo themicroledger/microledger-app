@@ -5,7 +5,7 @@ const helper = require("../../../helper/helper");
 const logger = require('../../../helper/logger');
 const br = helper.baseResponse;
 const router = new express.Router();
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const CurrencyModel = require('../../../models/configCurrencyModel');
 const PriceModel = require('../../../models/configPriceModel');
 const PriceAuditModel = require('../../../models/configPriceAuditModel');
@@ -82,7 +82,7 @@ router.post("/add", authUser, priceMiddleware.canCreate, (req, res) => {
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, priceMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, priceMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
     await processBulkInsert(req, res, 'Price', insertData);
 });
 

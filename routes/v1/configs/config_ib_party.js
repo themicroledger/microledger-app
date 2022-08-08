@@ -5,7 +5,7 @@ const logger = require('../../../helper/logger');
 const br = helper.baseResponse;
 const router = new express.Router();
 const json2csv = require('json2csv').parse;
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const {processBulkInsert} = require('../helper/process_bulk_insert');
 const CurrencyModel = require('../../../models/configCurrencyModel');
 const IbPartyModel = require('../../../models/configIbPartyModel');
@@ -152,7 +152,7 @@ router.post("/add", authUser, ibPartyMiddleware.canCreate, (req, res) => {
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, ibPartyMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, ibPartyMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
     await processBulkInsert(req, res, 'Ib Party', insertData);
 });
 

@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
-const { sysConst } = require('../helper/helper');
+const {sysConst} = require('../helper/helper');
+const accessTypes = sysConst.permissionAccessTypes;
 
-const configLedgerLookupSchema = new mongoose.Schema({
+const configLedgerLookupAuditSchema = new mongoose.Schema({
     securityId : {
         type: String,
         required: true
@@ -45,7 +46,6 @@ const configLedgerLookupSchema = new mongoose.Schema({
         ref : "config_ib_quotes",
     },
     minTradeVolume : {
-        required: true,
         type: Number,
     },
     volume : {
@@ -62,7 +62,7 @@ const configLedgerLookupSchema = new mongoose.Schema({
     },
     issuePrice: {
         required: true,
-        type: Date
+        type: Number
     },
     redemptionPrice:{
         required: true,
@@ -83,8 +83,7 @@ const configLedgerLookupSchema = new mongoose.Schema({
         required: true
     },
     maturityDate : {
-        type: Date,
-        required: true
+        type: Date
     },
     structure:{
         type: mongoose.Schema.Types.ObjectId,
@@ -175,12 +174,12 @@ const configLedgerLookupSchema = new mongoose.Schema({
     },
     oddCouponsAndRedempOddConvLastCoupon : {
         type: String,
-        enum: ['Regular', 'Irregular'],
+        enum: sysConst.lastCoupon,
         default: null
     },
     oddCouponsAndRedempOddConvLastRedeption : {
         type: String,
-        enum: ['Regular', 'Irregular'],
+        enum: sysConst.lastCoupon,
         default: null
     },
     sequenceConventionRedemption : {
@@ -203,6 +202,93 @@ const configLedgerLookupSchema = new mongoose.Schema({
     accruedInterestConventionsCalculationMethod : {
         type: String
     },
+    floatingRatesReferenceRate : {
+        type: mongoose.Schema.Types.ObjectId,
+        default: null,
+        ref : "config_reference_rates_descriptions",
+    },
+    floatingRatesSpreadRate : {
+        type: Number
+    },
+    interestLookBackPeriod : {
+        type: Number
+    },
+    interestMultiplierFactor : {
+        type: Number
+    },
+    interestAdjustmentFixingDays : {
+        type: Boolean,
+        default: false
+    },
+    defaultFixingDate: {
+        type: String
+    },
+    defaultFixingRate: Number,
+    fixingTerm: Number,
+    fixingUnits: {
+        type: String,
+        default: null,
+        enum: sysConst.acPeriodUnit
+    },
+    rateResetHolidayCalender : {
+        type: mongoose.Schema.Types.ObjectId,
+        default: null,
+        ref : "config_calender_or_bank_holiday_rules",
+    },
+    compoundingConvention: {
+        type: String,
+        default: null,
+        enum: sysConst.compoundingConvention
+    },
+    spreadConventionOrCompounding: {
+        type: String,
+        default: null,
+        enum: sysConst.spreadConventionOrCompounding
+    },
+    couponRateMinimum: Number,
+    couponRateMaximum: Number,
+    alternativeSecurityIdIdentificationSystem: String,
+    alternativeSecurityIdLongSecurityName: String,
+    alternativeSecurityIdCusip: String,
+    alternativeSecurityIdIsin: String,
+    putCalls: [{
+        fromDate: {
+            type: String,
+            required: true
+        },
+        toDate: {
+            type: String,
+            required: true
+        },
+        price: {
+            type: Number,
+            min: 0,
+            required: true
+        },
+        noOfDays: {
+            type: Number,
+            min: 0,
+            required: true
+        },
+        optionType: {
+            type: String,
+            required: true,
+            enum: sysConst.putCall
+        }
+    }],
+    clientSpecificFields: [{
+        name: {
+            type: String,
+            unique: true,
+            required: true
+        },
+        value: {
+            type: String,
+            required: true
+        }
+    }],
+    attachments: [ String ],
+    comments: String,
     changedByUser: {
         type: mongoose.Schema.Types.ObjectId,
         default: null,
@@ -230,7 +316,24 @@ const configLedgerLookupSchema = new mongoose.Schema({
     deleteReason: {
         type: String,
         default: ''
-    }
+    },
+    actionItemId:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref : "config_bond_securities"
+    },
+    action: {
+        type: String,
+        default: '',
+        enum: [accessTypes.CREATE, accessTypes.EDIT, accessTypes.DELETE]
+    },
+    actionDate: {
+        type: Date
+    },
+    actionBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        default: null,
+        ref : "users"
+    },
 }, { timestamps: true });
 
-module.exports = mongoose.model("config_ledger_lookups", configLedgerLookupSchema);
+module.exports = mongoose.model("config_bond_security_audits", configLedgerLookupAuditSchema);

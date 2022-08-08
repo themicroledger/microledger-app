@@ -5,7 +5,7 @@ const logger = require('../../../helper/logger');
 const br = helper.baseResponse;
 const router = new express.Router();
 const json2csv = require('json2csv').parse;
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const {processBulkInsert} = require('../helper/process_bulk_insert');
 const IbCalenderOrBankHolidayModel = require('../../../models/configCalenderOrBankHolidayModel');
 const currencyModel = require('../../../models/configCurrencyModel');
@@ -88,7 +88,7 @@ router.post("/add", authUser, currencyMiddleware.canCreate, (req, res) => {
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, currencyMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, currencyMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
     await processBulkInsert(req, res, 'Currency', insertData);
 });
 

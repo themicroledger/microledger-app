@@ -5,7 +5,7 @@ const logger = require('../../../helper/logger');
 const moment = require('moment');
 const br = helper.baseResponse;
 const router = new express.Router();
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const IbTransactionStatusModel = require('../../../models/configIbTransactionStatusModel');
 const AbFrameworkModel = require('../../../models/configAbFrameworkModel');
 const AbFrameworkAuditModel = require('../../../models/configAbFrameworkAuditModel');
@@ -81,7 +81,7 @@ router.post("/add", authUser, abFrameworkMiddleware.canCreate, (req, res) => {
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, abFrameworkMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, abFrameworkMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
     await processBulkInsert(req, res, 'Ab Framework', insertData);
 });
 

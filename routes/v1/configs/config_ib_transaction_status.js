@@ -4,7 +4,7 @@ const helper = require("../../../helper/helper");
 const br = helper.baseResponse;
 const router = new express.Router();
 const json2csv = require('json2csv').parse;
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const {processBulkInsert} = require('../helper/process_bulk_insert');
 const IbTransactionStatusModel = require('../../../models/configIbTransactionStatusModel');
 const IbTransactionStatusAuditModel = require('../../../models/configIbTransactionStatusAuditModel');
@@ -68,7 +68,7 @@ router.post("/add", authUser, ibTransactionStatusMiddleware.canCreate, (req, res
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, ibTransactionStatusMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, ibTransactionStatusMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
   await processBulkInsert(req, res, 'Security Group', insertData);
 });
 
