@@ -11,14 +11,13 @@ const CurrencyModel = require('../../../models/configCurrencyModel');
 const CalenderOrBankHolidayModel = require('../../../models/configCalenderOrBankHolidayModel');
 const IbExchangeModel = require('../../../models/configIbExchangeModel');
 const IbQuote = require('../../../models/configIbQuoteModel');
-const IbTransactionStatusModel = require('../../../models/configIbTransactionStatusModel');
 const ReferenceRateModel = require('../../../models/configReferenceRatesDescriptionModel');
-const BondSecurityModel = require('../../../models/');
-const BondSecurityAuditModel = require('../../../models/configAbFrameworkAuditModel');
+const BondSecurityModel = require('../../../models/bondSecurityModel');
+const BondSecurityAuditModel = require('../../../models/bondSecurityAuditModel');
 const {Validator} = require('node-input-validator');
 const json2csv = require('json2csv').parse;
 const {processBulkInsert} = require('../helper/process_bulk_insert');
-const {authUser, isValidParamId, haveDataToUpdate} = require('../../../middleware/auth');
+const {authUser, isValidParamId} = require('../../../middleware/auth');
 const bondSecurityMiddleware = require('../../../middleware/bond_security_middleware');
 
 let bondDataValidator = {
@@ -2593,7 +2592,7 @@ router.put("/update/attachments/remove/:id", authUser, bondSecurityMiddleware.ca
 
 /**
  * @swagger
- * /api/v1/config/bond/add/bulk:
+ * /api/v1/bond/add/bulk:
  *  post:
  *      summary: Add Bulk Bond Security using csv file
  *      tags: [Bond]
@@ -2619,7 +2618,7 @@ router.post("/add/bulk", authUser, bondSecurityMiddleware.canCreate, bulkUploade
 
 /**
  * @swagger
- * /api/v1/config/bond/get-demo-bulk-insert-file/csv:
+ * /api/v1/bond/get-demo-bulk-insert-file/csv:
  *  get:
  *      summary: Get all Bulk Insert sample csv file
  *      tags: [Bond]
@@ -2718,14 +2717,10 @@ router.get("/get-demo-bulk-insert-file/csv", /*authUser, bondSecurityMiddleware.
 
 /**
  * @swagger
- * /api/v1/config/bond/get-all:
+ * /api/v1/bond/get-all:
  *  get:
  *      summary: Get all Bond
  *      tags: [Bond]
- *      parameters:
- *      - name: search
- *        in: query
- *        default: bo
  *      responses:
  *          200:
  *              description: Success
@@ -2738,11 +2733,11 @@ router.get("/get-all", authUser, bondSecurityMiddleware.canRead, async (req, res
             isDeleted: false,
         }
 
-        if (req.query.search !== undefined && req.query.search.length > 0) {
+/*        if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.costBasisProfileName = {
                 $regex: '/^' + req.query.search + '/i',
             }
-        }
+        }*/
 
         let assets = await BondSecurityModel.find(filter);
         br.sendSuccess(res, assets);
@@ -2754,7 +2749,7 @@ router.get("/get-all", authUser, bondSecurityMiddleware.canRead, async (req, res
 
 /**
  * @swagger
- * /api/v1/config/bond/get/{id}:
+ * /api/v1/bond/get/{id}:
  *  get:
  *      summary: get Bond Security details by id
  *      tags: [Bond]
@@ -2772,10 +2767,11 @@ router.get("/get-all", authUser, bondSecurityMiddleware.canRead, async (req, res
 router.get("/get/:id", authUser, bondSecurityMiddleware.canRead, isValidParamId, async (req, res) => {
     try {
         const id = req.validParamId;
-        let assetDetails = await BondSecurityModel.find({_id: id, isDeleted: false});
+        let assetDetails = await BondSecurityModel
+            .find({_id: id, isDeleted: false});
 
         if (assetDetails.length === 0) {
-            return br.sendNotSuccessful(res, `Ab Framework with id => ${id} not found or deleted!`);
+            return br.sendNotSuccessful(res, `Bond Security with id => ${id} not found or deleted!`);
         }
 
         br.sendSuccess(res, assetDetails[0]);
@@ -2787,7 +2783,7 @@ router.get("/get/:id", authUser, bondSecurityMiddleware.canRead, isValidParamId,
 
 /**
  * @swagger
- * /api/v1/config/bond/delete/{id}:
+ * /api/v1/bond/delete/{id}:
  *  delete:
  *      summary: delete Bond Security details by id
  *      tags: [Bond]
@@ -2814,7 +2810,7 @@ router.delete("/delete/:id", authUser, bondSecurityMiddleware.canDelete, isValid
         let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false});
 
         if (configItemDetails.length === 0) {
-            return br.sendNotSuccessful(res, `Ab Framework with id => ${id} not found or deleted!`);
+            return br.sendNotSuccessful(res, `Bond Security with id => ${id} not found or deleted!`);
         }
 
         await session.startTransaction();
@@ -2917,7 +2913,7 @@ router.delete("/delete/:id", authUser, bondSecurityMiddleware.canDelete, isValid
 
         await session.commitTransaction();
 
-        br.sendSuccess(res, configItemDetails, 'Ab Framework deleted successfully!');
+        br.sendSuccess(res, configItemDetails, 'Bond Security deleted successfully!');
     } catch (error) {
 
         if (session.inTransaction()) {
@@ -2932,7 +2928,7 @@ router.delete("/delete/:id", authUser, bondSecurityMiddleware.canDelete, isValid
 
 /**
  * @swagger
- * /api/v1/config/bond/bulk/delete:
+ * /api/v1/bond/bulk/delete:
  *  delete:
  *      summary: delete Bond Securities details by list id
  *      tags: [Bond]

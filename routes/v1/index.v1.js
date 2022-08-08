@@ -30,4 +30,5 @@ module.exports = (app) => {
     app.use('/api/v1/config/accounting-treatment-lookup', require('./configs/config_accounting_treatment_lookup'));
     app.use('/api/v1/config/accounting-period-definition', require('./configs/config_accounting_period_definition'));
     app.use('/api/v1/config/ledger-period-control', require('./configs/config_ledger_period_control'));
+    app.use('/api/v1/bond', require('./bond/bond_security'));
 }
