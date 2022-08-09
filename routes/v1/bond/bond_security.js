@@ -11,6 +11,8 @@ const CurrencyModel = require('../../../models/configCurrencyModel');
 const CalenderOrBankHolidayModel = require('../../../models/configCalenderOrBankHolidayModel');
 const IbExchangeModel = require('../../../models/configIbExchangeModel');
 const IbQuote = require('../../../models/configIbQuoteModel');
+const IbParty = require('../../../models/configIbPartyModel');
+const IbInterestType = require('../../../models/configIbInterestTypeModel');
 const ReferenceRateModel = require('../../../models/configReferenceRatesDescriptionModel');
 const BondSecurityModel = require('../../../models/bondSecurityModel');
 const BondSecurityAuditModel = require('../../../models/bondSecurityAuditModel');
@@ -89,6 +91,10 @@ let bondDataValidator = {
                     firstCouponPaymentDate: inputData.firstCouponPaymentDate,
                 };
 
+                if((await BondSecurityModel.find({userDefinedSecurityId: data.userDefinedSecurityId})).length > 0){
+                    return callback({}, null, `Bond Secuurity is present with userDefinedSecurityId: ${data.userDefinedSecurityId}!`);
+                }
+
                 if (!helper.isValidObjectId(data.securityCode)) {
                     return callback({}, null, 'securityCode is not a valid Security Group Id!');
                 } else {
@@ -151,7 +157,7 @@ let bondDataValidator = {
                 if (!helper.isValidObjectId(data.issuer)) {
                     return callback({}, null, 'issuer is not a valid Ib Quote Id!');
                 } else {
-                    const itemDetails = await IbQuote
+                    const itemDetails = await IbParty
                         .find({_id: data.issuer, isDeleted: false,});
 
                     if (itemDetails.length === 0) {
@@ -163,6 +169,17 @@ let bondDataValidator = {
                     return callback({}, null, 'Invalid Date in issueDate!');
                 } else if (data.issueDate !== undefined && moment(data.issueDate).isValid()) {
                     data.issueDate = new Date(moment(data.issueDate).format());
+                }
+
+                if (!helper.isValidObjectId(data.interestType)) {
+                    return callback({}, null, 'interestType is not a valid Ib InterestType Id!');
+                } else {
+                    const itemDetails = await IbInterestType
+                        .find({_id: data.interestType, isDeleted: false,});
+
+                    if (itemDetails.length === 0) {
+                        return callback({}, null, 'Invalid Ib InterestType Id for interestType => ' + data.interestType + '!');
+                    }
                 }
 
                 if (data.maturityDate !== undefined && !moment(data.maturityDate).isValid()) {
@@ -181,8 +198,16 @@ let bondDataValidator = {
                     return callback({}, null, 'couponTerm should have a valid numeric value!');
                 }
 
+                if (!helper.isObjectContainsKey(helper.sysConst.referenceTermLength, data.couponTermUnit)) {
+                    return callback({}, null, 'Invalid couponTermUnit!');
+                }
+
                 if (data.redemptionTerm !== undefined && isNaN(Number(data.redemptionTerm))) {
                     return callback({}, null, 'redemptionTerm should have a valid numeric value!');
+                }
+
+                if (!helper.isObjectContainsKey(helper.sysConst.referenceTermLength, data.redemptionTermUnit)) {
+                    return callback({}, null, 'Invalid redemptionTermUnit!');
                 }
 
                 if (data.inceptionRedemptionRate !== undefined && isNaN(Number(data.inceptionRedemptionRate))) {
@@ -554,7 +579,7 @@ let bondDataValidator = {
 };
 
 let bondDataUpdate = {
-    createBond: async (data, session, callback) => {
+    createBond: async (req, data, session, callback) => {
 
         const configFind = await BondSecurityModel.find({
             securityId: data.securityId,
@@ -1839,7 +1864,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
  *                              default: 6287f9cc5f9120bbbbc36f59
  *                          interestType:
  *                              type: string
- *                              default: FIXED
+ *                              default: 6287f9cc5f9120bbbbc36f59
  *                          couponRate:
  *                              type: string
  *                              default: FIB
@@ -1863,7 +1888,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
  *                              default: 2
  *                          redemptionTermUnit:
  *                              type: string
- *                              default: Months
+ *                              default: Month
  *                          inceptionRedemptionRate:
  *                              type: string
  *                              default: 50.19
@@ -1887,7 +1912,7 @@ router.post("/add/general", authUser, bondSecurityMiddleware.canCreate, (req, re
             let session = await mongo.startSession();
             session.startTransaction();
 
-            await bondDataUpdate.createBond(data, session, (err, data, msg) => {
+            await bondDataUpdate.createBond(req, data, session, (err, data, msg) => {
                 if (err) {
                     session.abortTransaction();
                     br.sendNotSuccessful(res, msg, err);
@@ -1973,7 +1998,7 @@ router.post("/add/general", authUser, bondSecurityMiddleware.canCreate, (req, re
  *                              default: 6287f9cc5f9120bbbbc36f59
  *                          interestType:
  *                              type: string
- *                              default: FIXED
+ *                              default: 6287f9cc5f9120bbbbc36f59
  *                          couponRate:
  *                              type: string
  *                              default: FIB
@@ -1997,7 +2022,7 @@ router.post("/add/general", authUser, bondSecurityMiddleware.canCreate, (req, re
  *                              default: 2
  *                          redemptionTermUnit:
  *                              type: string
- *                              default: Months
+ *                              default: Month
  *                          inceptionRedemptionRate:
  *                              type: string
  *                              default: 50.19
@@ -2739,7 +2764,18 @@ router.get("/get-all", authUser, bondSecurityMiddleware.canRead, async (req, res
             }
         }*/
 
-        let assets = await BondSecurityModel.find(filter);
+        let assets = await BondSecurityModel.find(filter)
+            .populate([
+                'securityCode',
+                'currency',
+                'paymentHolidayCalender',
+                'exchange',
+                'quoted',
+                'issuer',
+                'redemptionCurrency',
+                'interestType',
+                'structure'
+            ]);
         br.sendSuccess(res, assets);
     } catch (error) {
         logger.error(error);
@@ -2768,7 +2804,18 @@ router.get("/get/:id", authUser, bondSecurityMiddleware.canRead, isValidParamId,
     try {
         const id = req.validParamId;
         let assetDetails = await BondSecurityModel
-            .find({_id: id, isDeleted: false});
+            .find({_id: id, isDeleted: false})
+            .populate([
+                'securityCode',
+                'currency',
+                'paymentHolidayCalender',
+                'exchange',
+                'quoted',
+                'issuer',
+                'redemptionCurrency',
+                'interestType',
+                'structure'
+            ]);
 
         if (assetDetails.length === 0) {
             return br.sendNotSuccessful(res, `Bond Security with id => ${id} not found or deleted!`);

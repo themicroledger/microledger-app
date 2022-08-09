@@ -173,12 +173,12 @@ const configLedgerLookupSchema = new mongoose.Schema({
     },
     oddCouponsAndRedempOddConvLastCoupon : {
         type: String,
-        enum: sysConst.lastCoupon,
+        enum: Object.values(sysConst.lastCoupon).concat(null),
         default: null
     },
     oddCouponsAndRedempOddConvLastRedeption : {
         type: String,
-        enum: sysConst.lastCoupon,
+        enum: Object.values(sysConst.lastCoupon).concat(null),
         default: null
     },
     sequenceConventionRedemption : {
@@ -227,7 +227,7 @@ const configLedgerLookupSchema = new mongoose.Schema({
     fixingUnits: {
         type: String,
         default: null,
-        enum: sysConst.acPeriodUnit
+        enum: Object.values(sysConst.acPeriodUnit).concat(null)
     },
     rateResetHolidayCalender : {
         type: mongoose.Schema.Types.ObjectId,
@@ -237,12 +237,12 @@ const configLedgerLookupSchema = new mongoose.Schema({
     compoundingConvention: {
         type: String,
         default: null,
-        enum: sysConst.compoundingConvention
+        enum: Object.values(sysConst.compoundingConvention).concat(null)
     },
     spreadConventionOrCompounding: {
         type: String,
         default: null,
-        enum: sysConst.spreadConventionOrCompounding
+        enum: Object.values(sysConst.spreadConventionOrCompounding).concat(null)
     },
     couponRateMinimum: Number,
     couponRateMaximum: Number,
@@ -278,7 +278,6 @@ const configLedgerLookupSchema = new mongoose.Schema({
     clientSpecificFields: [{
         name: {
             type: String,
-            unique: true,
             required: true
         },
         value: {
@@ -318,4 +317,4 @@ const configLedgerLookupSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-module.exports = mongoose.model("config_bond_securities", configLedgerLookupSchema);
+module.exports = mongoose.model("bond_securities", configLedgerLookupSchema);

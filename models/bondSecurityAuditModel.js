@@ -174,12 +174,12 @@ const configLedgerLookupAuditSchema = new mongoose.Schema({
     },
     oddCouponsAndRedempOddConvLastCoupon : {
         type: String,
-        enum: sysConst.lastCoupon,
+        enum: Object.values(sysConst.lastCoupon).concat(null),
         default: null
     },
     oddCouponsAndRedempOddConvLastRedeption : {
         type: String,
-        enum: sysConst.lastCoupon,
+        enum: Object.values(sysConst.lastCoupon).concat(null),
         default: null
     },
     sequenceConventionRedemption : {
@@ -228,7 +228,7 @@ const configLedgerLookupAuditSchema = new mongoose.Schema({
     fixingUnits: {
         type: String,
         default: null,
-        enum: sysConst.acPeriodUnit
+        enum: Object.values(sysConst.acPeriodUnit).concat(null)
     },
     rateResetHolidayCalender : {
         type: mongoose.Schema.Types.ObjectId,
@@ -238,12 +238,12 @@ const configLedgerLookupAuditSchema = new mongoose.Schema({
     compoundingConvention: {
         type: String,
         default: null,
-        enum: sysConst.compoundingConvention
+        enum: Object.values(sysConst.compoundingConvention).concat(null)
     },
     spreadConventionOrCompounding: {
         type: String,
         default: null,
-        enum: sysConst.spreadConventionOrCompounding
+        enum: Object.values(sysConst.spreadConventionOrCompounding).concat(null)
     },
     couponRateMinimum: Number,
     couponRateMaximum: Number,
@@ -279,7 +279,6 @@ const configLedgerLookupAuditSchema = new mongoose.Schema({
     clientSpecificFields: [{
         name: {
             type: String,
-            unique: true,
             required: true
         },
         value: {
@@ -319,7 +318,7 @@ const configLedgerLookupAuditSchema = new mongoose.Schema({
     },
     actionItemId:{
         type: mongoose.Schema.Types.ObjectId,
-        ref : "config_bond_securities"
+        ref : "bond_securities"
     },
     action: {
         type: String,
@@ -336,4 +335,4 @@ const configLedgerLookupAuditSchema = new mongoose.Schema({
     },
 }, { timestamps: true });
 
-module.exports = mongoose.model("config_bond_security_audits", configLedgerLookupAuditSchema);
+module.exports = mongoose.model("bond_security_audits", configLedgerLookupAuditSchema);

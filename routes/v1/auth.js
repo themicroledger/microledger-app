@@ -60,8 +60,7 @@ router.post("/login", (req, res) => {
                         br.sendSuccess(res, {
                             userData: {
                                 id: loginUser[0]._id,
-                                firstName: loginUser[0].firstName,
-                                lastName: loginUser[0].lastName,
+                                name: loginUser[0].name,
                                 email: loginUser[0].email,
                                 profilePicUrl: loginUser[0].profilePicUrl,
                                 dob: loginUser[0].dob,
