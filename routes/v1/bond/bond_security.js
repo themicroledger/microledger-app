@@ -91,7 +91,7 @@ let bondDataValidator = {
                     firstCouponPaymentDate: inputData.firstCouponPaymentDate,
                 };
 
-                if((await BondSecurityModel.find({userDefinedSecurityId: data.userDefinedSecurityId})).length > 0){
+                if ((await BondSecurityModel.find({userDefinedSecurityId: data.userDefinedSecurityId})).length > 0) {
                     return callback({}, null, `Bond Secuurity is present with userDefinedSecurityId: ${data.userDefinedSecurityId}!`);
                 }
 
@@ -580,1053 +580,1089 @@ let bondDataValidator = {
 
 let bondDataUpdate = {
     createBond: async (req, data, session, callback) => {
+        try {
 
-        const configFind = await BondSecurityModel.find({
-            securityId: data.securityId,
-            userDefinedSecurityId: data.userDefinedSecurityId,
-            name: data.name,
-            securityCode: data.securityCode,
-            currency: data.currency,
-            paymentHolidayCalender: data.paymentHolidayCalender,
-            exchange: data.exchange,
-            quoted: data.quoted
-        }).populate(['securityCode', 'currency', 'paymentHolidayCalender', 'exchange', 'quoted']);
+            const configFind = await BondSecurityModel.find({
+                securityId: data.securityId,
+                userDefinedSecurityId: data.userDefinedSecurityId,
+                name: data.name,
+                securityCode: data.securityCode,
+                currency: data.currency,
+                paymentHolidayCalender: data.paymentHolidayCalender,
+                exchange: data.exchange,
+                quoted: data.quoted
+            }).populate(['securityCode', 'currency', 'paymentHolidayCalender', 'exchange', 'quoted']);
 
-        if (configFind.length > 0) {
-            return callback({}, null, 'Bond Security is already '
-                + 'present with Security Id => `'
-                + configFind[0].securityId
-                + '` and User Defined Security Id => `'
-                + configFind[0].userDefinedSecurityId
-                + '` and Name => `'
-                + configFind[0].name
-                + '` and Security Group => `'
-                + configFind[0].securityCode.securityCode
-                + '` and Ib Currency => `'
-                + configFind[0].currency
-                + '` and Bank Holiday => `'
-                + configFind[0].paymentHolidayCalender
-                + '` and Ib Exchange => `'
-                + configFind[0].exchange
-                + '` and Ib Quote => `'
-                + configFind[0].quoted + ' !',
-                {});
+            if (configFind.length > 0) {
+                return callback({}, null, 'Bond Security is already '
+                    + 'present with Security Id => `'
+                    + configFind[0].securityId
+                    + '` and User Defined Security Id => `'
+                    + configFind[0].userDefinedSecurityId
+                    + '` and Name => `'
+                    + configFind[0].name
+                    + '` and Security Group => `'
+                    + configFind[0].securityCode.securityCode
+                    + '` and Ib Currency => `'
+                    + configFind[0].currency
+                    + '` and Bank Holiday => `'
+                    + configFind[0].paymentHolidayCalender
+                    + '` and Ib Exchange => `'
+                    + configFind[0].exchange
+                    + '` and Ib Quote => `'
+                    + configFind[0].quoted + ' !',
+                    {});
+            }
+
+            const ib = new BondSecurityModel({
+                securityId: data.securityId,
+                ISIN: data.ISIN,
+                userDefinedSecurityId: data.userDefinedSecurityId,
+                name: data.name,
+                securityCode: data.securityCode,
+                currency: data.currency,
+                paymentHolidayCalender: data.paymentHolidayCalender,
+                exchange: data.exchange,
+                quoted: data.quoted,
+                minTradeVolume: data.minTradeVolume,
+                volume: data.volume,
+                issuer: data.issuer,
+                issueDate: data.issueDate,
+                issuePrice: data.issuePrice,
+                redemptionPrice: data.redemptionPrice,
+                redemptionCurrency: data.redemptionCurrency,
+                interestType: data.interestType,
+                couponRate: data.couponRate,
+                maturityDate: data.maturityDate,
+                structure: data.structure,
+                firstRedemptionDate: data.firstRedemptionDate,
+                couponTerm: data.couponTerm,
+                couponTermUnit: data.couponTermUnit,
+                redemptionTerm: data.redemptionTerm,
+                redemptionTermUnit: data.redemptionTermUnit,
+                inceptionRedemptionRate: data.inceptionRedemptionRate,
+                currentPoolFactor: data.currentPoolFactor,
+                firstCouponPaymentDate: data.firstCouponPaymentDate,
+            }, {session: session});
+            await ib.save();
+
+            const auditData = new BondSecurityAuditModel({
+                securityId: ib.securityId,
+                ISIN: ib.ISIN,
+                userDefinedSecurityId: ib.userDefinedSecurityId,
+                name: ib.name,
+                securityCode: ib.securityCode,
+                currency: ib.currency,
+                paymentHolidayCalender: ib.paymentHolidayCalender,
+                exchange: ib.exchange,
+                quoted: ib.quoted,
+                minTradeVolume: ib.minTradeVolume,
+                volume: ib.volume,
+                issuer: ib.issuer,
+                issueDate: ib.issueDate,
+                issuePrice: ib.issuePrice,
+                redemptionPrice: ib.redemptionPrice,
+                redemptionCurrency: ib.redemptionCurrency,
+                interestType: ib.interestType,
+                couponRate: ib.couponRate,
+                maturityDate: ib.maturityDate,
+                structure: ib.structure,
+                firstRedemptionDate: ib.firstRedemptionDate,
+                couponTerm: ib.couponTerm,
+                couponTermUnit: ib.couponTermUnit,
+                redemptionTerm: ib.redemptionTerm,
+                redemptionTermUnit: ib.redemptionTermUnit,
+                inceptionRedemptionRate: ib.inceptionRedemptionRate,
+                currentPoolFactor: ib.currentPoolFactor,
+                firstCouponPaymentDate: ib.firstCouponPaymentDate,
+                quotation: ib.quotation,
+                settlementDays: ib.settlementDays,
+                quoteType: ib.quoteType,
+                quotingLotSize: ib.quotingLotSize,
+                quotingFaceValue: ib.quotingFaceValue,
+                couponConventionDayCount: ib.couponConventionDayCount,
+                couponConventionPaymentDayConvention: ib.couponConventionPaymentDayConvention,
+                couponConventionTreasuryTermCoupon: ib.couponConventionTreasuryTermCoupon,
+                couponConventionEndOfMonthConvention: ib.couponConventionEndOfMonthConvention,
+                couponConventionTreasuryTermCouponBase: ib.couponConventionTreasuryTermCouponBase,
+                couponConventionHolidayAdjustedCouponFlag: ib.couponConventionHolidayAdjustedCouponFlag,
+                couponConventionPaymentType: ib.couponConventionPaymentType,
+                couponConventionFixedRateDeCompounding: ib.couponConventionFixedRateDeCompounding,
+                couponConventionInclExclOneDay: ib.couponConventionInclExclOneDay,
+                couponConventionSequenceConvention: ib.couponConventionSequenceConvention,
+                oddCouponsAndRedempOddConvLastCoupon: ib.oddCouponsAndRedempOddConvLastCoupon,
+                oddCouponsAndRedempOddConvLastRedeption: ib.oddCouponsAndRedempOddConvLastRedeption,
+                sequenceConventionRedemption: ib.sequenceConventionRedemption,
+                couponConventionsDayCount: ib.couponConventionsDayCount,
+                accruedInterestConventionsInterestType: ib.accruedInterestConventionsInterestType,
+                accruedInterestConventionsTreasuryProduct: ib.accruedInterestConventionsTreasuryProduct,
+                accruedInterestConventionsDayCountConvention: ib.accruedInterestConventionsDayCountConvention,
+                accruedInterestConventionsCalculationMethod: ib.accruedInterestConventionsCalculationMethod,
+                floatingRatesReferenceRate: ib.floatingRatesReferenceRate,
+                floatingRatesSpreadRate: ib.floatingRatesSpreadRate,
+                interestLookBackPeriod: ib.interestLookBackPeriod,
+                interestMultiplierFactor: ib.interestMultiplierFactor,
+                interestAdjustmentFixingDays: ib.interestAdjustmentFixingDays,
+                defaultFixingDate: ib.defaultFixingDate,
+                defaultFixingRate: ib.defaultFixingRate,
+                fixingTerm: ib.fixingTerm,
+                fixingUnits: ib.fixingUnits,
+                rateResetHolidayCalender: ib.rateResetHolidayCalender,
+                compoundingConvention: ib.compoundingConvention,
+                spreadConventionOrCompounding: ib.spreadConventionOrCompounding,
+                couponRateMinimum: ib.couponRateMinimum,
+                couponRateMaximum: ib.couponRateMaximum,
+                alternativeSecurityIdIdentificationSystem: ib.alternativeSecurityIdIdentificationSystem,
+                alternativeSecurityIdLongSecurityName: ib.alternativeSecurityIdLongSecurityName,
+                alternativeSecurityIdCusip: ib.alternativeSecurityIdCusip,
+                alternativeSecurityIdIsin: ib.alternativeSecurityIdIsin,
+                putCalls: ib.putCalls,
+                clientSpecificFields: ib.clientSpecificFields,
+                attachments: ib.attachments,
+                comments: ib.comments,
+                changedByUser: ib.changedByUser,
+                changedDate: ib.changedDate,
+                createdByUser: ib.createdByUser,
+                isDeleted: ib.isDeleted,
+                deletedBy: ib.deletedBy,
+                deleteReason: ib.deleteReason,
+                actionItemId: ib._id,
+                action: helper.sysConst.permissionAccessTypes.CREATE,
+                actionDate: new Date(),
+                actionBy: req.appCurrentUserData._id,
+            }, {session: session});
+            await auditData.save();
+
+            callback(null, ib, 'Bond Security General Info added successfully!');
+        } catch (e) {
+            callback(e, null, 'Server Error!');
         }
-
-        const ib = new BondSecurityModel({
-            securityId: data.securityId,
-            ISIN: data.ISIN,
-            userDefinedSecurityId: data.userDefinedSecurityId,
-            name: data.name,
-            securityCode: data.securityCode,
-            currency: data.currency,
-            paymentHolidayCalender: data.paymentHolidayCalender,
-            exchange: data.exchange,
-            quoted: data.quoted,
-            minTradeVolume: data.minTradeVolume,
-            volume: data.volume,
-            issuer: data.issuer,
-            issueDate: data.issueDate,
-            issuePrice: data.issuePrice,
-            redemptionPrice: data.redemptionPrice,
-            redemptionCurrency: data.redemptionCurrency,
-            interestType: data.interestType,
-            couponRate: data.couponRate,
-            maturityDate: data.maturityDate,
-            structure: data.structure,
-            firstRedemptionDate: data.firstRedemptionDate,
-            couponTerm: data.couponTerm,
-            couponTermUnit: data.couponTermUnit,
-            redemptionTerm: data.redemptionTerm,
-            redemptionTermUnit: data.redemptionTermUnit,
-            inceptionRedemptionRate: data.inceptionRedemptionRate,
-            currentPoolFactor: data.currentPoolFactor,
-            firstCouponPaymentDate: data.firstCouponPaymentDate,
-        }, {session: session});
-        await ib.save();
-
-        const auditData = new BondSecurityAuditModel({
-            securityId: ib.securityId,
-            ISIN: ib.ISIN,
-            userDefinedSecurityId: ib.userDefinedSecurityId,
-            name: ib.name,
-            securityCode: ib.securityCode,
-            currency: ib.currency,
-            paymentHolidayCalender: ib.paymentHolidayCalender,
-            exchange: ib.exchange,
-            quoted: ib.quoted,
-            minTradeVolume: ib.minTradeVolume,
-            volume: ib.volume,
-            issuer: ib.issuer,
-            issueDate: ib.issueDate,
-            issuePrice: ib.issuePrice,
-            redemptionPrice: ib.redemptionPrice,
-            redemptionCurrency: ib.redemptionCurrency,
-            interestType: ib.interestType,
-            couponRate: ib.couponRate,
-            maturityDate: ib.maturityDate,
-            structure: ib.structure,
-            firstRedemptionDate: ib.firstRedemptionDate,
-            couponTerm: ib.couponTerm,
-            couponTermUnit: ib.couponTermUnit,
-            redemptionTerm: ib.redemptionTerm,
-            redemptionTermUnit: ib.redemptionTermUnit,
-            inceptionRedemptionRate: ib.inceptionRedemptionRate,
-            currentPoolFactor: ib.currentPoolFactor,
-            firstCouponPaymentDate: ib.firstCouponPaymentDate,
-            quotation: ib.quotation,
-            settlementDays: ib.settlementDays,
-            quoteType: ib.quoteType,
-            quotingLotSize: ib.quotingLotSize,
-            quotingFaceValue: ib.quotingFaceValue,
-            couponConventionDayCount: ib.couponConventionDayCount,
-            couponConventionPaymentDayConvention: ib.couponConventionPaymentDayConvention,
-            couponConventionTreasuryTermCoupon: ib.couponConventionTreasuryTermCoupon,
-            couponConventionEndOfMonthConvention: ib.couponConventionEndOfMonthConvention,
-            couponConventionTreasuryTermCouponBase: ib.couponConventionTreasuryTermCouponBase,
-            couponConventionHolidayAdjustedCouponFlag: ib.couponConventionHolidayAdjustedCouponFlag,
-            couponConventionPaymentType: ib.couponConventionPaymentType,
-            couponConventionFixedRateDeCompounding: ib.couponConventionFixedRateDeCompounding,
-            couponConventionInclExclOneDay: ib.couponConventionInclExclOneDay,
-            couponConventionSequenceConvention: ib.couponConventionSequenceConvention,
-            oddCouponsAndRedempOddConvLastCoupon: ib.oddCouponsAndRedempOddConvLastCoupon,
-            oddCouponsAndRedempOddConvLastRedeption: ib.oddCouponsAndRedempOddConvLastRedeption,
-            sequenceConventionRedemption: ib.sequenceConventionRedemption,
-            couponConventionsDayCount: ib.couponConventionsDayCount,
-            accruedInterestConventionsInterestType: ib.accruedInterestConventionsInterestType,
-            accruedInterestConventionsTreasuryProduct: ib.accruedInterestConventionsTreasuryProduct,
-            accruedInterestConventionsDayCountConvention: ib.accruedInterestConventionsDayCountConvention,
-            accruedInterestConventionsCalculationMethod: ib.accruedInterestConventionsCalculationMethod,
-            floatingRatesReferenceRate: ib.floatingRatesReferenceRate,
-            floatingRatesSpreadRate: ib.floatingRatesSpreadRate,
-            interestLookBackPeriod: ib.interestLookBackPeriod,
-            interestMultiplierFactor: ib.interestMultiplierFactor,
-            interestAdjustmentFixingDays: ib.interestAdjustmentFixingDays,
-            defaultFixingDate: ib.defaultFixingDate,
-            defaultFixingRate: ib.defaultFixingRate,
-            fixingTerm: ib.fixingTerm,
-            fixingUnits: ib.fixingUnits,
-            rateResetHolidayCalender: ib.rateResetHolidayCalender,
-            compoundingConvention: ib.compoundingConvention,
-            spreadConventionOrCompounding: ib.spreadConventionOrCompounding,
-            couponRateMinimum: ib.couponRateMinimum,
-            couponRateMaximum: ib.couponRateMaximum,
-            alternativeSecurityIdIdentificationSystem: ib.alternativeSecurityIdIdentificationSystem,
-            alternativeSecurityIdLongSecurityName: ib.alternativeSecurityIdLongSecurityName,
-            alternativeSecurityIdCusip: ib.alternativeSecurityIdCusip,
-            alternativeSecurityIdIsin: ib.alternativeSecurityIdIsin,
-            putCalls: ib.putCalls,
-            clientSpecificFields: ib.clientSpecificFields,
-            attachments: ib.attachments,
-            comments: ib.comments,
-            changedByUser: ib.changedByUser,
-            changedDate: ib.changedDate,
-            createdByUser: ib.createdByUser,
-            isDeleted: ib.isDeleted,
-            deletedBy: ib.deletedBy,
-            deleteReason: ib.deleteReason,
-            actionItemId: ib._id,
-            action: helper.sysConst.permissionAccessTypes.CREATE,
-            actionDate: new Date(),
-            actionBy: req.appCurrentUserData._id,
-        }, {session: session});
-        await auditData.save();
-
-        callback(null, ib, 'Bond Security General Info added successfully!');
     },
     updateBondGeneral: async (req, data, session, callback) => {
-        let id = req.validParamId;
+        try {
+            let id = req.validParamId;
 
-        let configItem = await BondSecurityModel.find({_id: id, isDeleted: false});
+            let configItem = await BondSecurityModel.find({_id: id, isDeleted: false});
 
-        if (configItem.length === 0) {
-            return callback({notFound: true}, null, `Bond Security with id => ${id} not found or deleted!`);
+            if (configItem.length === 0) {
+                return callback({notFound: true}, null, `Bond Security with id => ${id} not found or deleted!`);
+            }
+
+            const configFind = await BondSecurityModel.find({
+                securityId: data.securityId,
+                userDefinedSecurityId: data.userDefinedSecurityId,
+                name: data.name,
+                securityCode: data.securityCode,
+                currency: data.currency,
+                paymentHolidayCalender: data.paymentHolidayCalender,
+                exchange: data.exchange,
+                quoted: data.quoted
+            }).populate(['securityCode', 'currency', 'paymentHolidayCalender', 'exchange', 'quoted']);
+
+            if (configFind.length > 0) {
+                return callback(false, 'Bond Security is already '
+                    + 'present with Security Id => `'
+                    + configFind[0].securityId
+                    + '` and User Defined Security Id => `'
+                    + configFind[0].userDefinedSecurityId
+                    + '` and Name => `'
+                    + configFind[0].name
+                    + '` and Security Group => `'
+                    + configFind[0].securityCode.securityCode
+                    + '` and Ib Currency => `'
+                    + configFind[0].currency
+                    + '` and Bank Holiday => `'
+                    + configFind[0].paymentHolidayCalender
+                    + '` and Ib Exchange => `'
+                    + configFind[0].exchange
+                    + '` and Ib Quote => `'
+                    + configFind[0].quoted + ' !',
+                    {});
+            }
+
+            data.changedByUser = req.appCurrentUserData._id;
+            data.changedDate = new Date();
+
+            await BondSecurityModel.updateOne({_id: id}, data).session(session);
+
+            let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
+            configItemDetails = configItemDetails[0];
+
+            const auditData = new BondSecurityModel({
+                securityId: configItemDetails.securityId,
+                ISIN: configItemDetails.ISIN,
+                userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
+                name: configItemDetails.name,
+                securityCode: configItemDetails.securityCode,
+                currency: configItemDetails.currency,
+                paymentHolidayCalender: configItemDetails.paymentHolidayCalender,
+                exchange: configItemDetails.exchange,
+                quoted: configItemDetails.quoted,
+                minTradeVolume: configItemDetails.minTradeVolume,
+                volume: configItemDetails.volume,
+                issuer: configItemDetails.issuer,
+                issueDate: configItemDetails.issueDate,
+                issuePrice: configItemDetails.issuePrice,
+                redemptionPrice: configItemDetails.redemptionPrice,
+                redemptionCurrency: configItemDetails.redemptionCurrency,
+                interestType: configItemDetails.interestType,
+                couponRate: configItemDetails.couponRate,
+                maturityDate: configItemDetails.maturityDate,
+                structure: configItemDetails.structure,
+                firstRedemptionDate: configItemDetails.firstRedemptionDate,
+                couponTerm: configItemDetails.couponTerm,
+                couponTermUnit: configItemDetails.couponTermUnit,
+                redemptionTerm: configItemDetails.redemptionTerm,
+                redemptionTermUnit: configItemDetails.redemptionTermUnit,
+                inceptionRedemptionRate: configItemDetails.inceptionRedemptionRate,
+                currentPoolFactor: configItemDetails.currentPoolFactor,
+                firstCouponPaymentDate: configItemDetails.firstCouponPaymentDate,
+                quotation: configItemDetails.quotation,
+                settlementDays: configItemDetails.settlementDays,
+                quoteType: configItemDetails.quoteType,
+                quotingLotSize: configItemDetails.quotingLotSize,
+                quotingFaceValue: configItemDetails.quotingFaceValue,
+                couponConventionDayCount: configItemDetails.couponConventionDayCount,
+                couponConventionPaymentDayConvention: configItemDetails.couponConventionPaymentDayConvention,
+                couponConventionTreasuryTermCoupon: configItemDetails.couponConventionTreasuryTermCoupon,
+                couponConventionEndOfMonthConvention: configItemDetails.couponConventionEndOfMonthConvention,
+                couponConventionTreasuryTermCouponBase: configItemDetails.couponConventionTreasuryTermCouponBase,
+                couponConventionHolidayAdjustedCouponFlag: configItemDetails.couponConventionHolidayAdjustedCouponFlag,
+                couponConventionPaymentType: configItemDetails.couponConventionPaymentType,
+                couponConventionFixedRateDeCompounding: configItemDetails.couponConventionFixedRateDeCompounding,
+                couponConventionInclExclOneDay: configItemDetails.couponConventionInclExclOneDay,
+                couponConventionSequenceConvention: configItemDetails.couponConventionSequenceConvention,
+                oddCouponsAndRedempOddConvLastCoupon: configItemDetails.oddCouponsAndRedempOddConvLastCoupon,
+                oddCouponsAndRedempOddConvLastRedeption: configItemDetails.oddCouponsAndRedempOddConvLastRedeption,
+                sequenceConventionRedemption: configItemDetails.sequenceConventionRedemption,
+                couponConventionsDayCount: configItemDetails.couponConventionsDayCount,
+                accruedInterestConventionsInterestType: configItemDetails.accruedInterestConventionsInterestType,
+                accruedInterestConventionsTreasuryProduct: configItemDetails.accruedInterestConventionsTreasuryProduct,
+                accruedInterestConventionsDayCountConvention: configItemDetails.accruedInterestConventionsDayCountConvention,
+                accruedInterestConventionsCalculationMethod: configItemDetails.accruedInterestConventionsCalculationMethod,
+                floatingRatesReferenceRate: configItemDetails.floatingRatesReferenceRate,
+                floatingRatesSpreadRate: configItemDetails.floatingRatesSpreadRate,
+                interestLookBackPeriod: configItemDetails.interestLookBackPeriod,
+                interestMultiplierFactor: configItemDetails.interestMultiplierFactor,
+                interestAdjustmentFixingDays: configItemDetails.interestAdjustmentFixingDays,
+                defaultFixingDate: configItemDetails.defaultFixingDate,
+                defaultFixingRate: configItemDetails.defaultFixingRate,
+                fixingTerm: configItemDetails.fixingTerm,
+                fixingUnits: configItemDetails.fixingUnits,
+                rateResetHolidayCalender: configItemDetails.rateResetHolidayCalender,
+                compoundingConvention: configItemDetails.compoundingConvention,
+                spreadConventionOrCompounding: configItemDetails.spreadConventionOrCompounding,
+                couponRateMinimum: configItemDetails.couponRateMinimum,
+                couponRateMaximum: configItemDetails.couponRateMaximum,
+                alternativeSecurityIdIdentificationSystem: configItemDetails.alternativeSecurityIdIdentificationSystem,
+                alternativeSecurityIdLongSecurityName: configItemDetails.alternativeSecurityIdLongSecurityName,
+                alternativeSecurityIdCusip: configItemDetails.alternativeSecurityIdCusip,
+                alternativeSecurityIdIsin: configItemDetails.alternativeSecurityIdIsin,
+                putCalls: configItemDetails.putCalls,
+                clientSpecificFields: configItemDetails.clientSpecificFields,
+                attachments: configItemDetails.attachments,
+                comments: configItemDetails.comments,
+                changedByUser: configItemDetails.changedByUser,
+                changedDate: configItemDetails.changedDate,
+                createdByUser: configItemDetails.createdByUser,
+                isDeleted: configItemDetails.isDeleted,
+                deletedBy: configItemDetails.deletedBy,
+                deleteReason: configItemDetails.deleteReason,
+                actionItemId: configItemDetails._id,
+                action: helper.sysConst.permissionAccessTypes.EDIT,
+                actionDate: new Date(),
+                actionBy: configItemDetails.createdByUser,
+            }, {session: session});
+            await auditData.save();
+
+            callback(null, {}, 'Bond Security General Info updated successfully!');
+        } catch (e) {
+            callback(e, null, 'Server Error!');
         }
-
-        const configFind = await BondSecurityModel.find({
-            securityId: data.securityId,
-            userDefinedSecurityId: data.userDefinedSecurityId,
-            name: data.name,
-            securityCode: data.securityCode,
-            currency: data.currency,
-            paymentHolidayCalender: data.paymentHolidayCalender,
-            exchange: data.exchange,
-            quoted: data.quoted
-        }).populate(['securityCode', 'currency', 'paymentHolidayCalender', 'exchange', 'quoted']);
-
-        if (configFind.length > 0) {
-            return callback(false, 'Bond Security is already '
-                + 'present with Security Id => `'
-                + configFind[0].securityId
-                + '` and User Defined Security Id => `'
-                + configFind[0].userDefinedSecurityId
-                + '` and Name => `'
-                + configFind[0].name
-                + '` and Security Group => `'
-                + configFind[0].securityCode.securityCode
-                + '` and Ib Currency => `'
-                + configFind[0].currency
-                + '` and Bank Holiday => `'
-                + configFind[0].paymentHolidayCalender
-                + '` and Ib Exchange => `'
-                + configFind[0].exchange
-                + '` and Ib Quote => `'
-                + configFind[0].quoted + ' !',
-                {});
-        }
-
-        data.changedByUser = req.appCurrentUserData._id;
-        data.changedDate = new Date();
-
-        await BondSecurityModel.updateOne({_id: id}, data).session(session);
-
-        let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
-        configItemDetails = configItemDetails[0];
-
-        const auditData = new BondSecurityModel({
-            securityId: configItemDetails.securityId,
-            ISIN: configItemDetails.ISIN,
-            userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
-            name: configItemDetails.name,
-            securityCode: configItemDetails.securityCode,
-            currency: configItemDetails.currency,
-            paymentHolidayCalender: configItemDetails.paymentHolidayCalender,
-            exchange: configItemDetails.exchange,
-            quoted: configItemDetails.quoted,
-            minTradeVolume: configItemDetails.minTradeVolume,
-            volume: configItemDetails.volume,
-            issuer: configItemDetails.issuer,
-            issueDate: configItemDetails.issueDate,
-            issuePrice: configItemDetails.issuePrice,
-            redemptionPrice: configItemDetails.redemptionPrice,
-            redemptionCurrency: configItemDetails.redemptionCurrency,
-            interestType: configItemDetails.interestType,
-            couponRate: configItemDetails.couponRate,
-            maturityDate: configItemDetails.maturityDate,
-            structure: configItemDetails.structure,
-            firstRedemptionDate: configItemDetails.firstRedemptionDate,
-            couponTerm: configItemDetails.couponTerm,
-            couponTermUnit: configItemDetails.couponTermUnit,
-            redemptionTerm: configItemDetails.redemptionTerm,
-            redemptionTermUnit: configItemDetails.redemptionTermUnit,
-            inceptionRedemptionRate: configItemDetails.inceptionRedemptionRate,
-            currentPoolFactor: configItemDetails.currentPoolFactor,
-            firstCouponPaymentDate: configItemDetails.firstCouponPaymentDate,
-            quotation: configItemDetails.quotation,
-            settlementDays: configItemDetails.settlementDays,
-            quoteType: configItemDetails.quoteType,
-            quotingLotSize: configItemDetails.quotingLotSize,
-            quotingFaceValue: configItemDetails.quotingFaceValue,
-            couponConventionDayCount: configItemDetails.couponConventionDayCount,
-            couponConventionPaymentDayConvention: configItemDetails.couponConventionPaymentDayConvention,
-            couponConventionTreasuryTermCoupon: configItemDetails.couponConventionTreasuryTermCoupon,
-            couponConventionEndOfMonthConvention: configItemDetails.couponConventionEndOfMonthConvention,
-            couponConventionTreasuryTermCouponBase: configItemDetails.couponConventionTreasuryTermCouponBase,
-            couponConventionHolidayAdjustedCouponFlag: configItemDetails.couponConventionHolidayAdjustedCouponFlag,
-            couponConventionPaymentType: configItemDetails.couponConventionPaymentType,
-            couponConventionFixedRateDeCompounding: configItemDetails.couponConventionFixedRateDeCompounding,
-            couponConventionInclExclOneDay: configItemDetails.couponConventionInclExclOneDay,
-            couponConventionSequenceConvention: configItemDetails.couponConventionSequenceConvention,
-            oddCouponsAndRedempOddConvLastCoupon: configItemDetails.oddCouponsAndRedempOddConvLastCoupon,
-            oddCouponsAndRedempOddConvLastRedeption: configItemDetails.oddCouponsAndRedempOddConvLastRedeption,
-            sequenceConventionRedemption: configItemDetails.sequenceConventionRedemption,
-            couponConventionsDayCount: configItemDetails.couponConventionsDayCount,
-            accruedInterestConventionsInterestType: configItemDetails.accruedInterestConventionsInterestType,
-            accruedInterestConventionsTreasuryProduct: configItemDetails.accruedInterestConventionsTreasuryProduct,
-            accruedInterestConventionsDayCountConvention: configItemDetails.accruedInterestConventionsDayCountConvention,
-            accruedInterestConventionsCalculationMethod: configItemDetails.accruedInterestConventionsCalculationMethod,
-            floatingRatesReferenceRate: configItemDetails.floatingRatesReferenceRate,
-            floatingRatesSpreadRate: configItemDetails.floatingRatesSpreadRate,
-            interestLookBackPeriod: configItemDetails.interestLookBackPeriod,
-            interestMultiplierFactor: configItemDetails.interestMultiplierFactor,
-            interestAdjustmentFixingDays: configItemDetails.interestAdjustmentFixingDays,
-            defaultFixingDate: configItemDetails.defaultFixingDate,
-            defaultFixingRate: configItemDetails.defaultFixingRate,
-            fixingTerm: configItemDetails.fixingTerm,
-            fixingUnits: configItemDetails.fixingUnits,
-            rateResetHolidayCalender: configItemDetails.rateResetHolidayCalender,
-            compoundingConvention: configItemDetails.compoundingConvention,
-            spreadConventionOrCompounding: configItemDetails.spreadConventionOrCompounding,
-            couponRateMinimum: configItemDetails.couponRateMinimum,
-            couponRateMaximum: configItemDetails.couponRateMaximum,
-            alternativeSecurityIdIdentificationSystem: configItemDetails.alternativeSecurityIdIdentificationSystem,
-            alternativeSecurityIdLongSecurityName: configItemDetails.alternativeSecurityIdLongSecurityName,
-            alternativeSecurityIdCusip: configItemDetails.alternativeSecurityIdCusip,
-            alternativeSecurityIdIsin: configItemDetails.alternativeSecurityIdIsin,
-            putCalls: configItemDetails.putCalls,
-            clientSpecificFields: configItemDetails.clientSpecificFields,
-            attachments: configItemDetails.attachments,
-            comments: configItemDetails.comments,
-            changedByUser: configItemDetails.changedByUser,
-            changedDate: configItemDetails.changedDate,
-            createdByUser: configItemDetails.createdByUser,
-            isDeleted: configItemDetails.isDeleted,
-            deletedBy: configItemDetails.deletedBy,
-            deleteReason: configItemDetails.deleteReason,
-            actionItemId: configItemDetails._id,
-            action: helper.sysConst.permissionAccessTypes.EDIT,
-            actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
-        }, {session: session});
-        await auditData.save();
-
-        callback(null, {}, 'Bond Security General Info updated successfully!');
     },
     updateMarketConvention: async (req, data, session, callback) => {
-        let id = req.validParamId;
+        try {
+            let id = req.validParamId;
 
-        let configItem = await BondSecurityModel.find({_id: id, isDeleted: false});
+            let configItem = await BondSecurityModel.find({_id: id, isDeleted: false});
 
-        if (configItem.length === 0) {
-            return callback({notFound: true}, null, `Bond Security with id => ${id} not found or deleted!`);
+            if (configItem.length === 0) {
+                return callback({notFound: true}, null, `Bond Security with id => ${id} not found or deleted!`);
+            }
+
+            data.changedByUser = req.appCurrentUserData._id;
+            data.changedDate = new Date();
+
+            await BondSecurityModel.updateOne({_id: id}, data).session(session);
+
+            let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
+            configItemDetails = configItemDetails[0];
+
+            const auditData = new BondSecurityModel({
+                securityId: configItemDetails.securityId,
+                ISIN: configItemDetails.ISIN,
+                userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
+                name: configItemDetails.name,
+                securityCode: configItemDetails.securityCode,
+                currency: configItemDetails.currency,
+                paymentHolidayCalender: configItemDetails.paymentHolidayCalender,
+                exchange: configItemDetails.exchange,
+                quoted: configItemDetails.quoted,
+                minTradeVolume: configItemDetails.minTradeVolume,
+                volume: configItemDetails.volume,
+                issuer: configItemDetails.issuer,
+                issueDate: configItemDetails.issueDate,
+                issuePrice: configItemDetails.issuePrice,
+                redemptionPrice: configItemDetails.redemptionPrice,
+                redemptionCurrency: configItemDetails.redemptionCurrency,
+                interestType: configItemDetails.interestType,
+                couponRate: configItemDetails.couponRate,
+                maturityDate: configItemDetails.maturityDate,
+                structure: configItemDetails.structure,
+                firstRedemptionDate: configItemDetails.firstRedemptionDate,
+                couponTerm: configItemDetails.couponTerm,
+                couponTermUnit: configItemDetails.couponTermUnit,
+                redemptionTerm: configItemDetails.redemptionTerm,
+                redemptionTermUnit: configItemDetails.redemptionTermUnit,
+                inceptionRedemptionRate: configItemDetails.inceptionRedemptionRate,
+                currentPoolFactor: configItemDetails.currentPoolFactor,
+                firstCouponPaymentDate: configItemDetails.firstCouponPaymentDate,
+                quotation: configItemDetails.quotation,
+                settlementDays: configItemDetails.settlementDays,
+                quoteType: configItemDetails.quoteType,
+                quotingLotSize: configItemDetails.quotingLotSize,
+                quotingFaceValue: configItemDetails.quotingFaceValue,
+                couponConventionDayCount: configItemDetails.couponConventionDayCount,
+                couponConventionPaymentDayConvention: configItemDetails.couponConventionPaymentDayConvention,
+                couponConventionTreasuryTermCoupon: configItemDetails.couponConventionTreasuryTermCoupon,
+                couponConventionEndOfMonthConvention: configItemDetails.couponConventionEndOfMonthConvention,
+                couponConventionTreasuryTermCouponBase: configItemDetails.couponConventionTreasuryTermCouponBase,
+                couponConventionHolidayAdjustedCouponFlag: configItemDetails.couponConventionHolidayAdjustedCouponFlag,
+                couponConventionPaymentType: configItemDetails.couponConventionPaymentType,
+                couponConventionFixedRateDeCompounding: configItemDetails.couponConventionFixedRateDeCompounding,
+                couponConventionInclExclOneDay: configItemDetails.couponConventionInclExclOneDay,
+                couponConventionSequenceConvention: configItemDetails.couponConventionSequenceConvention,
+                oddCouponsAndRedempOddConvLastCoupon: configItemDetails.oddCouponsAndRedempOddConvLastCoupon,
+                oddCouponsAndRedempOddConvLastRedeption: configItemDetails.oddCouponsAndRedempOddConvLastRedeption,
+                sequenceConventionRedemption: configItemDetails.sequenceConventionRedemption,
+                couponConventionsDayCount: configItemDetails.couponConventionsDayCount,
+                accruedInterestConventionsInterestType: configItemDetails.accruedInterestConventionsInterestType,
+                accruedInterestConventionsTreasuryProduct: configItemDetails.accruedInterestConventionsTreasuryProduct,
+                accruedInterestConventionsDayCountConvention: configItemDetails.accruedInterestConventionsDayCountConvention,
+                accruedInterestConventionsCalculationMethod: configItemDetails.accruedInterestConventionsCalculationMethod,
+                floatingRatesReferenceRate: configItemDetails.floatingRatesReferenceRate,
+                floatingRatesSpreadRate: configItemDetails.floatingRatesSpreadRate,
+                interestLookBackPeriod: configItemDetails.interestLookBackPeriod,
+                interestMultiplierFactor: configItemDetails.interestMultiplierFactor,
+                interestAdjustmentFixingDays: configItemDetails.interestAdjustmentFixingDays,
+                defaultFixingDate: configItemDetails.defaultFixingDate,
+                defaultFixingRate: configItemDetails.defaultFixingRate,
+                fixingTerm: configItemDetails.fixingTerm,
+                fixingUnits: configItemDetails.fixingUnits,
+                rateResetHolidayCalender: configItemDetails.rateResetHolidayCalender,
+                compoundingConvention: configItemDetails.compoundingConvention,
+                spreadConventionOrCompounding: configItemDetails.spreadConventionOrCompounding,
+                couponRateMinimum: configItemDetails.couponRateMinimum,
+                couponRateMaximum: configItemDetails.couponRateMaximum,
+                alternativeSecurityIdIdentificationSystem: configItemDetails.alternativeSecurityIdIdentificationSystem,
+                alternativeSecurityIdLongSecurityName: configItemDetails.alternativeSecurityIdLongSecurityName,
+                alternativeSecurityIdCusip: configItemDetails.alternativeSecurityIdCusip,
+                alternativeSecurityIdIsin: configItemDetails.alternativeSecurityIdIsin,
+                putCalls: configItemDetails.putCalls,
+                clientSpecificFields: configItemDetails.clientSpecificFields,
+                attachments: configItemDetails.attachments,
+                comments: configItemDetails.comments,
+                changedByUser: configItemDetails.changedByUser,
+                changedDate: configItemDetails.changedDate,
+                createdByUser: configItemDetails.createdByUser,
+                isDeleted: configItemDetails.isDeleted,
+                deletedBy: configItemDetails.deletedBy,
+                deleteReason: configItemDetails.deleteReason,
+                actionItemId: configItemDetails._id,
+                action: helper.sysConst.permissionAccessTypes.EDIT,
+                actionDate: new Date(),
+                actionBy: configItemDetails.createdByUser,
+            }, {session: session});
+            await auditData.save();
+
+            callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
+        } catch (e) {
+            callback(e, null, 'Server Error!');
         }
-
-        data.changedByUser = req.appCurrentUserData._id;
-        data.changedDate = new Date();
-
-        await BondSecurityModel.updateOne({_id: id}, data).session(session);
-
-        let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
-        configItemDetails = configItemDetails[0];
-
-        const auditData = new BondSecurityModel({
-            securityId: configItemDetails.securityId,
-            ISIN: configItemDetails.ISIN,
-            userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
-            name: configItemDetails.name,
-            securityCode: configItemDetails.securityCode,
-            currency: configItemDetails.currency,
-            paymentHolidayCalender: configItemDetails.paymentHolidayCalender,
-            exchange: configItemDetails.exchange,
-            quoted: configItemDetails.quoted,
-            minTradeVolume: configItemDetails.minTradeVolume,
-            volume: configItemDetails.volume,
-            issuer: configItemDetails.issuer,
-            issueDate: configItemDetails.issueDate,
-            issuePrice: configItemDetails.issuePrice,
-            redemptionPrice: configItemDetails.redemptionPrice,
-            redemptionCurrency: configItemDetails.redemptionCurrency,
-            interestType: configItemDetails.interestType,
-            couponRate: configItemDetails.couponRate,
-            maturityDate: configItemDetails.maturityDate,
-            structure: configItemDetails.structure,
-            firstRedemptionDate: configItemDetails.firstRedemptionDate,
-            couponTerm: configItemDetails.couponTerm,
-            couponTermUnit: configItemDetails.couponTermUnit,
-            redemptionTerm: configItemDetails.redemptionTerm,
-            redemptionTermUnit: configItemDetails.redemptionTermUnit,
-            inceptionRedemptionRate: configItemDetails.inceptionRedemptionRate,
-            currentPoolFactor: configItemDetails.currentPoolFactor,
-            firstCouponPaymentDate: configItemDetails.firstCouponPaymentDate,
-            quotation: configItemDetails.quotation,
-            settlementDays: configItemDetails.settlementDays,
-            quoteType: configItemDetails.quoteType,
-            quotingLotSize: configItemDetails.quotingLotSize,
-            quotingFaceValue: configItemDetails.quotingFaceValue,
-            couponConventionDayCount: configItemDetails.couponConventionDayCount,
-            couponConventionPaymentDayConvention: configItemDetails.couponConventionPaymentDayConvention,
-            couponConventionTreasuryTermCoupon: configItemDetails.couponConventionTreasuryTermCoupon,
-            couponConventionEndOfMonthConvention: configItemDetails.couponConventionEndOfMonthConvention,
-            couponConventionTreasuryTermCouponBase: configItemDetails.couponConventionTreasuryTermCouponBase,
-            couponConventionHolidayAdjustedCouponFlag: configItemDetails.couponConventionHolidayAdjustedCouponFlag,
-            couponConventionPaymentType: configItemDetails.couponConventionPaymentType,
-            couponConventionFixedRateDeCompounding: configItemDetails.couponConventionFixedRateDeCompounding,
-            couponConventionInclExclOneDay: configItemDetails.couponConventionInclExclOneDay,
-            couponConventionSequenceConvention: configItemDetails.couponConventionSequenceConvention,
-            oddCouponsAndRedempOddConvLastCoupon: configItemDetails.oddCouponsAndRedempOddConvLastCoupon,
-            oddCouponsAndRedempOddConvLastRedeption: configItemDetails.oddCouponsAndRedempOddConvLastRedeption,
-            sequenceConventionRedemption: configItemDetails.sequenceConventionRedemption,
-            couponConventionsDayCount: configItemDetails.couponConventionsDayCount,
-            accruedInterestConventionsInterestType: configItemDetails.accruedInterestConventionsInterestType,
-            accruedInterestConventionsTreasuryProduct: configItemDetails.accruedInterestConventionsTreasuryProduct,
-            accruedInterestConventionsDayCountConvention: configItemDetails.accruedInterestConventionsDayCountConvention,
-            accruedInterestConventionsCalculationMethod: configItemDetails.accruedInterestConventionsCalculationMethod,
-            floatingRatesReferenceRate: configItemDetails.floatingRatesReferenceRate,
-            floatingRatesSpreadRate: configItemDetails.floatingRatesSpreadRate,
-            interestLookBackPeriod: configItemDetails.interestLookBackPeriod,
-            interestMultiplierFactor: configItemDetails.interestMultiplierFactor,
-            interestAdjustmentFixingDays: configItemDetails.interestAdjustmentFixingDays,
-            defaultFixingDate: configItemDetails.defaultFixingDate,
-            defaultFixingRate: configItemDetails.defaultFixingRate,
-            fixingTerm: configItemDetails.fixingTerm,
-            fixingUnits: configItemDetails.fixingUnits,
-            rateResetHolidayCalender: configItemDetails.rateResetHolidayCalender,
-            compoundingConvention: configItemDetails.compoundingConvention,
-            spreadConventionOrCompounding: configItemDetails.spreadConventionOrCompounding,
-            couponRateMinimum: configItemDetails.couponRateMinimum,
-            couponRateMaximum: configItemDetails.couponRateMaximum,
-            alternativeSecurityIdIdentificationSystem: configItemDetails.alternativeSecurityIdIdentificationSystem,
-            alternativeSecurityIdLongSecurityName: configItemDetails.alternativeSecurityIdLongSecurityName,
-            alternativeSecurityIdCusip: configItemDetails.alternativeSecurityIdCusip,
-            alternativeSecurityIdIsin: configItemDetails.alternativeSecurityIdIsin,
-            putCalls: configItemDetails.putCalls,
-            clientSpecificFields: configItemDetails.clientSpecificFields,
-            attachments: configItemDetails.attachments,
-            comments: configItemDetails.comments,
-            changedByUser: configItemDetails.changedByUser,
-            changedDate: configItemDetails.changedDate,
-            createdByUser: configItemDetails.createdByUser,
-            isDeleted: configItemDetails.isDeleted,
-            deletedBy: configItemDetails.deletedBy,
-            deleteReason: configItemDetails.deleteReason,
-            actionItemId: configItemDetails._id,
-            action: helper.sysConst.permissionAccessTypes.EDIT,
-            actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
-        }, {session: session});
-        await auditData.save();
-
-        callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
     },
     updateReferenceRate: async (req, data, session, callback) => {
-        let id = req.validParamId;
+        try {
+            let id = req.validParamId;
 
-        let configItem = await BondSecurityModel.find({_id: id, isDeleted: false});
+            let configItem = await BondSecurityModel.find({_id: id, isDeleted: false});
 
-        if (configItem.length === 0) {
-            return callback({notFound: true}, null, `Bond Security with id => ${id} not found or deleted!`);
+            if (configItem.length === 0) {
+                return callback({notFound: true}, null, `Bond Security with id => ${id} not found or deleted!`);
+            }
+
+            data.changedByUser = req.appCurrentUserData._id;
+            data.changedDate = new Date();
+
+            await BondSecurityModel.updateOne({_id: id}, data).session(session);
+
+            let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
+            configItemDetails = configItemDetails[0];
+
+            const auditData = new BondSecurityModel({
+                securityId: configItemDetails.securityId,
+                ISIN: configItemDetails.ISIN,
+                userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
+                name: configItemDetails.name,
+                securityCode: configItemDetails.securityCode,
+                currency: configItemDetails.currency,
+                paymentHolidayCalender: configItemDetails.paymentHolidayCalender,
+                exchange: configItemDetails.exchange,
+                quoted: configItemDetails.quoted,
+                minTradeVolume: configItemDetails.minTradeVolume,
+                volume: configItemDetails.volume,
+                issuer: configItemDetails.issuer,
+                issueDate: configItemDetails.issueDate,
+                issuePrice: configItemDetails.issuePrice,
+                redemptionPrice: configItemDetails.redemptionPrice,
+                redemptionCurrency: configItemDetails.redemptionCurrency,
+                interestType: configItemDetails.interestType,
+                couponRate: configItemDetails.couponRate,
+                maturityDate: configItemDetails.maturityDate,
+                structure: configItemDetails.structure,
+                firstRedemptionDate: configItemDetails.firstRedemptionDate,
+                couponTerm: configItemDetails.couponTerm,
+                couponTermUnit: configItemDetails.couponTermUnit,
+                redemptionTerm: configItemDetails.redemptionTerm,
+                redemptionTermUnit: configItemDetails.redemptionTermUnit,
+                inceptionRedemptionRate: configItemDetails.inceptionRedemptionRate,
+                currentPoolFactor: configItemDetails.currentPoolFactor,
+                firstCouponPaymentDate: configItemDetails.firstCouponPaymentDate,
+                quotation: configItemDetails.quotation,
+                settlementDays: configItemDetails.settlementDays,
+                quoteType: configItemDetails.quoteType,
+                quotingLotSize: configItemDetails.quotingLotSize,
+                quotingFaceValue: configItemDetails.quotingFaceValue,
+                couponConventionDayCount: configItemDetails.couponConventionDayCount,
+                couponConventionPaymentDayConvention: configItemDetails.couponConventionPaymentDayConvention,
+                couponConventionTreasuryTermCoupon: configItemDetails.couponConventionTreasuryTermCoupon,
+                couponConventionEndOfMonthConvention: configItemDetails.couponConventionEndOfMonthConvention,
+                couponConventionTreasuryTermCouponBase: configItemDetails.couponConventionTreasuryTermCouponBase,
+                couponConventionHolidayAdjustedCouponFlag: configItemDetails.couponConventionHolidayAdjustedCouponFlag,
+                couponConventionPaymentType: configItemDetails.couponConventionPaymentType,
+                couponConventionFixedRateDeCompounding: configItemDetails.couponConventionFixedRateDeCompounding,
+                couponConventionInclExclOneDay: configItemDetails.couponConventionInclExclOneDay,
+                couponConventionSequenceConvention: configItemDetails.couponConventionSequenceConvention,
+                oddCouponsAndRedempOddConvLastCoupon: configItemDetails.oddCouponsAndRedempOddConvLastCoupon,
+                oddCouponsAndRedempOddConvLastRedeption: configItemDetails.oddCouponsAndRedempOddConvLastRedeption,
+                sequenceConventionRedemption: configItemDetails.sequenceConventionRedemption,
+                couponConventionsDayCount: configItemDetails.couponConventionsDayCount,
+                accruedInterestConventionsInterestType: configItemDetails.accruedInterestConventionsInterestType,
+                accruedInterestConventionsTreasuryProduct: configItemDetails.accruedInterestConventionsTreasuryProduct,
+                accruedInterestConventionsDayCountConvention: configItemDetails.accruedInterestConventionsDayCountConvention,
+                accruedInterestConventionsCalculationMethod: configItemDetails.accruedInterestConventionsCalculationMethod,
+                floatingRatesReferenceRate: configItemDetails.floatingRatesReferenceRate,
+                floatingRatesSpreadRate: configItemDetails.floatingRatesSpreadRate,
+                interestLookBackPeriod: configItemDetails.interestLookBackPeriod,
+                interestMultiplierFactor: configItemDetails.interestMultiplierFactor,
+                interestAdjustmentFixingDays: configItemDetails.interestAdjustmentFixingDays,
+                defaultFixingDate: configItemDetails.defaultFixingDate,
+                defaultFixingRate: configItemDetails.defaultFixingRate,
+                fixingTerm: configItemDetails.fixingTerm,
+                fixingUnits: configItemDetails.fixingUnits,
+                rateResetHolidayCalender: configItemDetails.rateResetHolidayCalender,
+                compoundingConvention: configItemDetails.compoundingConvention,
+                spreadConventionOrCompounding: configItemDetails.spreadConventionOrCompounding,
+                couponRateMinimum: configItemDetails.couponRateMinimum,
+                couponRateMaximum: configItemDetails.couponRateMaximum,
+                alternativeSecurityIdIdentificationSystem: configItemDetails.alternativeSecurityIdIdentificationSystem,
+                alternativeSecurityIdLongSecurityName: configItemDetails.alternativeSecurityIdLongSecurityName,
+                alternativeSecurityIdCusip: configItemDetails.alternativeSecurityIdCusip,
+                alternativeSecurityIdIsin: configItemDetails.alternativeSecurityIdIsin,
+                putCalls: configItemDetails.putCalls,
+                clientSpecificFields: configItemDetails.clientSpecificFields,
+                attachments: configItemDetails.attachments,
+                comments: configItemDetails.comments,
+                changedByUser: configItemDetails.changedByUser,
+                changedDate: configItemDetails.changedDate,
+                createdByUser: configItemDetails.createdByUser,
+                isDeleted: configItemDetails.isDeleted,
+                deletedBy: configItemDetails.deletedBy,
+                deleteReason: configItemDetails.deleteReason,
+                actionItemId: configItemDetails._id,
+                action: helper.sysConst.permissionAccessTypes.EDIT,
+                actionDate: new Date(),
+                actionBy: configItemDetails.createdByUser,
+            }, {session: session});
+            await auditData.save();
+
+            callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
+        } catch (e) {
+            callback(e, null, 'Server Error!');
         }
-
-        data.changedByUser = req.appCurrentUserData._id;
-        data.changedDate = new Date();
-
-        await BondSecurityModel.updateOne({_id: id}, data).session(session);
-
-        let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
-        configItemDetails = configItemDetails[0];
-
-        const auditData = new BondSecurityModel({
-            securityId: configItemDetails.securityId,
-            ISIN: configItemDetails.ISIN,
-            userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
-            name: configItemDetails.name,
-            securityCode: configItemDetails.securityCode,
-            currency: configItemDetails.currency,
-            paymentHolidayCalender: configItemDetails.paymentHolidayCalender,
-            exchange: configItemDetails.exchange,
-            quoted: configItemDetails.quoted,
-            minTradeVolume: configItemDetails.minTradeVolume,
-            volume: configItemDetails.volume,
-            issuer: configItemDetails.issuer,
-            issueDate: configItemDetails.issueDate,
-            issuePrice: configItemDetails.issuePrice,
-            redemptionPrice: configItemDetails.redemptionPrice,
-            redemptionCurrency: configItemDetails.redemptionCurrency,
-            interestType: configItemDetails.interestType,
-            couponRate: configItemDetails.couponRate,
-            maturityDate: configItemDetails.maturityDate,
-            structure: configItemDetails.structure,
-            firstRedemptionDate: configItemDetails.firstRedemptionDate,
-            couponTerm: configItemDetails.couponTerm,
-            couponTermUnit: configItemDetails.couponTermUnit,
-            redemptionTerm: configItemDetails.redemptionTerm,
-            redemptionTermUnit: configItemDetails.redemptionTermUnit,
-            inceptionRedemptionRate: configItemDetails.inceptionRedemptionRate,
-            currentPoolFactor: configItemDetails.currentPoolFactor,
-            firstCouponPaymentDate: configItemDetails.firstCouponPaymentDate,
-            quotation: configItemDetails.quotation,
-            settlementDays: configItemDetails.settlementDays,
-            quoteType: configItemDetails.quoteType,
-            quotingLotSize: configItemDetails.quotingLotSize,
-            quotingFaceValue: configItemDetails.quotingFaceValue,
-            couponConventionDayCount: configItemDetails.couponConventionDayCount,
-            couponConventionPaymentDayConvention: configItemDetails.couponConventionPaymentDayConvention,
-            couponConventionTreasuryTermCoupon: configItemDetails.couponConventionTreasuryTermCoupon,
-            couponConventionEndOfMonthConvention: configItemDetails.couponConventionEndOfMonthConvention,
-            couponConventionTreasuryTermCouponBase: configItemDetails.couponConventionTreasuryTermCouponBase,
-            couponConventionHolidayAdjustedCouponFlag: configItemDetails.couponConventionHolidayAdjustedCouponFlag,
-            couponConventionPaymentType: configItemDetails.couponConventionPaymentType,
-            couponConventionFixedRateDeCompounding: configItemDetails.couponConventionFixedRateDeCompounding,
-            couponConventionInclExclOneDay: configItemDetails.couponConventionInclExclOneDay,
-            couponConventionSequenceConvention: configItemDetails.couponConventionSequenceConvention,
-            oddCouponsAndRedempOddConvLastCoupon: configItemDetails.oddCouponsAndRedempOddConvLastCoupon,
-            oddCouponsAndRedempOddConvLastRedeption: configItemDetails.oddCouponsAndRedempOddConvLastRedeption,
-            sequenceConventionRedemption: configItemDetails.sequenceConventionRedemption,
-            couponConventionsDayCount: configItemDetails.couponConventionsDayCount,
-            accruedInterestConventionsInterestType: configItemDetails.accruedInterestConventionsInterestType,
-            accruedInterestConventionsTreasuryProduct: configItemDetails.accruedInterestConventionsTreasuryProduct,
-            accruedInterestConventionsDayCountConvention: configItemDetails.accruedInterestConventionsDayCountConvention,
-            accruedInterestConventionsCalculationMethod: configItemDetails.accruedInterestConventionsCalculationMethod,
-            floatingRatesReferenceRate: configItemDetails.floatingRatesReferenceRate,
-            floatingRatesSpreadRate: configItemDetails.floatingRatesSpreadRate,
-            interestLookBackPeriod: configItemDetails.interestLookBackPeriod,
-            interestMultiplierFactor: configItemDetails.interestMultiplierFactor,
-            interestAdjustmentFixingDays: configItemDetails.interestAdjustmentFixingDays,
-            defaultFixingDate: configItemDetails.defaultFixingDate,
-            defaultFixingRate: configItemDetails.defaultFixingRate,
-            fixingTerm: configItemDetails.fixingTerm,
-            fixingUnits: configItemDetails.fixingUnits,
-            rateResetHolidayCalender: configItemDetails.rateResetHolidayCalender,
-            compoundingConvention: configItemDetails.compoundingConvention,
-            spreadConventionOrCompounding: configItemDetails.spreadConventionOrCompounding,
-            couponRateMinimum: configItemDetails.couponRateMinimum,
-            couponRateMaximum: configItemDetails.couponRateMaximum,
-            alternativeSecurityIdIdentificationSystem: configItemDetails.alternativeSecurityIdIdentificationSystem,
-            alternativeSecurityIdLongSecurityName: configItemDetails.alternativeSecurityIdLongSecurityName,
-            alternativeSecurityIdCusip: configItemDetails.alternativeSecurityIdCusip,
-            alternativeSecurityIdIsin: configItemDetails.alternativeSecurityIdIsin,
-            putCalls: configItemDetails.putCalls,
-            clientSpecificFields: configItemDetails.clientSpecificFields,
-            attachments: configItemDetails.attachments,
-            comments: configItemDetails.comments,
-            changedByUser: configItemDetails.changedByUser,
-            changedDate: configItemDetails.changedDate,
-            createdByUser: configItemDetails.createdByUser,
-            isDeleted: configItemDetails.isDeleted,
-            deletedBy: configItemDetails.deletedBy,
-            deleteReason: configItemDetails.deleteReason,
-            actionItemId: configItemDetails._id,
-            action: helper.sysConst.permissionAccessTypes.EDIT,
-            actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
-        }, {session: session});
-        await auditData.save();
-
-        callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
     },
     updateAlternativeSecurityId: async (req, data, session, callback) => {
-        let id = req.validParamId;
+        try {
+            let id = req.validParamId;
 
-        let configItem = await BondSecurityModel.find({_id: id, isDeleted: false});
+            let configItem = await BondSecurityModel.find({_id: id, isDeleted: false});
 
-        if (configItem.length === 0) {
-            return callback({notFound: true}, null, `Bond Security with id => ${id} not found or deleted!`);
+            if (configItem.length === 0) {
+                return callback({notFound: true}, null, `Bond Security with id => ${id} not found or deleted!`);
+            }
+
+            data.changedByUser = req.appCurrentUserData._id;
+            data.changedDate = new Date();
+
+            await BondSecurityModel.updateOne({_id: id}, data).session(session);
+
+            let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
+            configItemDetails = configItemDetails[0];
+
+            const auditData = new BondSecurityModel({
+                securityId: configItemDetails.securityId,
+                ISIN: configItemDetails.ISIN,
+                userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
+                name: configItemDetails.name,
+                securityCode: configItemDetails.securityCode,
+                currency: configItemDetails.currency,
+                paymentHolidayCalender: configItemDetails.paymentHolidayCalender,
+                exchange: configItemDetails.exchange,
+                quoted: configItemDetails.quoted,
+                minTradeVolume: configItemDetails.minTradeVolume,
+                volume: configItemDetails.volume,
+                issuer: configItemDetails.issuer,
+                issueDate: configItemDetails.issueDate,
+                issuePrice: configItemDetails.issuePrice,
+                redemptionPrice: configItemDetails.redemptionPrice,
+                redemptionCurrency: configItemDetails.redemptionCurrency,
+                interestType: configItemDetails.interestType,
+                couponRate: configItemDetails.couponRate,
+                maturityDate: configItemDetails.maturityDate,
+                structure: configItemDetails.structure,
+                firstRedemptionDate: configItemDetails.firstRedemptionDate,
+                couponTerm: configItemDetails.couponTerm,
+                couponTermUnit: configItemDetails.couponTermUnit,
+                redemptionTerm: configItemDetails.redemptionTerm,
+                redemptionTermUnit: configItemDetails.redemptionTermUnit,
+                inceptionRedemptionRate: configItemDetails.inceptionRedemptionRate,
+                currentPoolFactor: configItemDetails.currentPoolFactor,
+                firstCouponPaymentDate: configItemDetails.firstCouponPaymentDate,
+                quotation: configItemDetails.quotation,
+                settlementDays: configItemDetails.settlementDays,
+                quoteType: configItemDetails.quoteType,
+                quotingLotSize: configItemDetails.quotingLotSize,
+                quotingFaceValue: configItemDetails.quotingFaceValue,
+                couponConventionDayCount: configItemDetails.couponConventionDayCount,
+                couponConventionPaymentDayConvention: configItemDetails.couponConventionPaymentDayConvention,
+                couponConventionTreasuryTermCoupon: configItemDetails.couponConventionTreasuryTermCoupon,
+                couponConventionEndOfMonthConvention: configItemDetails.couponConventionEndOfMonthConvention,
+                couponConventionTreasuryTermCouponBase: configItemDetails.couponConventionTreasuryTermCouponBase,
+                couponConventionHolidayAdjustedCouponFlag: configItemDetails.couponConventionHolidayAdjustedCouponFlag,
+                couponConventionPaymentType: configItemDetails.couponConventionPaymentType,
+                couponConventionFixedRateDeCompounding: configItemDetails.couponConventionFixedRateDeCompounding,
+                couponConventionInclExclOneDay: configItemDetails.couponConventionInclExclOneDay,
+                couponConventionSequenceConvention: configItemDetails.couponConventionSequenceConvention,
+                oddCouponsAndRedempOddConvLastCoupon: configItemDetails.oddCouponsAndRedempOddConvLastCoupon,
+                oddCouponsAndRedempOddConvLastRedeption: configItemDetails.oddCouponsAndRedempOddConvLastRedeption,
+                sequenceConventionRedemption: configItemDetails.sequenceConventionRedemption,
+                couponConventionsDayCount: configItemDetails.couponConventionsDayCount,
+                accruedInterestConventionsInterestType: configItemDetails.accruedInterestConventionsInterestType,
+                accruedInterestConventionsTreasuryProduct: configItemDetails.accruedInterestConventionsTreasuryProduct,
+                accruedInterestConventionsDayCountConvention: configItemDetails.accruedInterestConventionsDayCountConvention,
+                accruedInterestConventionsCalculationMethod: configItemDetails.accruedInterestConventionsCalculationMethod,
+                floatingRatesReferenceRate: configItemDetails.floatingRatesReferenceRate,
+                floatingRatesSpreadRate: configItemDetails.floatingRatesSpreadRate,
+                interestLookBackPeriod: configItemDetails.interestLookBackPeriod,
+                interestMultiplierFactor: configItemDetails.interestMultiplierFactor,
+                interestAdjustmentFixingDays: configItemDetails.interestAdjustmentFixingDays,
+                defaultFixingDate: configItemDetails.defaultFixingDate,
+                defaultFixingRate: configItemDetails.defaultFixingRate,
+                fixingTerm: configItemDetails.fixingTerm,
+                fixingUnits: configItemDetails.fixingUnits,
+                rateResetHolidayCalender: configItemDetails.rateResetHolidayCalender,
+                compoundingConvention: configItemDetails.compoundingConvention,
+                spreadConventionOrCompounding: configItemDetails.spreadConventionOrCompounding,
+                couponRateMinimum: configItemDetails.couponRateMinimum,
+                couponRateMaximum: configItemDetails.couponRateMaximum,
+                alternativeSecurityIdIdentificationSystem: configItemDetails.alternativeSecurityIdIdentificationSystem,
+                alternativeSecurityIdLongSecurityName: configItemDetails.alternativeSecurityIdLongSecurityName,
+                alternativeSecurityIdCusip: configItemDetails.alternativeSecurityIdCusip,
+                alternativeSecurityIdIsin: configItemDetails.alternativeSecurityIdIsin,
+                putCalls: configItemDetails.putCalls,
+                clientSpecificFields: configItemDetails.clientSpecificFields,
+                attachments: configItemDetails.attachments,
+                comments: configItemDetails.comments,
+                changedByUser: configItemDetails.changedByUser,
+                changedDate: configItemDetails.changedDate,
+                createdByUser: configItemDetails.createdByUser,
+                isDeleted: configItemDetails.isDeleted,
+                deletedBy: configItemDetails.deletedBy,
+                deleteReason: configItemDetails.deleteReason,
+                actionItemId: configItemDetails._id,
+                action: helper.sysConst.permissionAccessTypes.EDIT,
+                actionDate: new Date(),
+                actionBy: configItemDetails.createdByUser,
+            }, {session: session});
+            await auditData.save();
+
+            callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
+        } catch (e) {
+            callback(e, null, 'Server Error!');
         }
-
-        data.changedByUser = req.appCurrentUserData._id;
-        data.changedDate = new Date();
-
-        await BondSecurityModel.updateOne({_id: id}, data).session(session);
-
-        let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
-        configItemDetails = configItemDetails[0];
-
-        const auditData = new BondSecurityModel({
-            securityId: configItemDetails.securityId,
-            ISIN: configItemDetails.ISIN,
-            userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
-            name: configItemDetails.name,
-            securityCode: configItemDetails.securityCode,
-            currency: configItemDetails.currency,
-            paymentHolidayCalender: configItemDetails.paymentHolidayCalender,
-            exchange: configItemDetails.exchange,
-            quoted: configItemDetails.quoted,
-            minTradeVolume: configItemDetails.minTradeVolume,
-            volume: configItemDetails.volume,
-            issuer: configItemDetails.issuer,
-            issueDate: configItemDetails.issueDate,
-            issuePrice: configItemDetails.issuePrice,
-            redemptionPrice: configItemDetails.redemptionPrice,
-            redemptionCurrency: configItemDetails.redemptionCurrency,
-            interestType: configItemDetails.interestType,
-            couponRate: configItemDetails.couponRate,
-            maturityDate: configItemDetails.maturityDate,
-            structure: configItemDetails.structure,
-            firstRedemptionDate: configItemDetails.firstRedemptionDate,
-            couponTerm: configItemDetails.couponTerm,
-            couponTermUnit: configItemDetails.couponTermUnit,
-            redemptionTerm: configItemDetails.redemptionTerm,
-            redemptionTermUnit: configItemDetails.redemptionTermUnit,
-            inceptionRedemptionRate: configItemDetails.inceptionRedemptionRate,
-            currentPoolFactor: configItemDetails.currentPoolFactor,
-            firstCouponPaymentDate: configItemDetails.firstCouponPaymentDate,
-            quotation: configItemDetails.quotation,
-            settlementDays: configItemDetails.settlementDays,
-            quoteType: configItemDetails.quoteType,
-            quotingLotSize: configItemDetails.quotingLotSize,
-            quotingFaceValue: configItemDetails.quotingFaceValue,
-            couponConventionDayCount: configItemDetails.couponConventionDayCount,
-            couponConventionPaymentDayConvention: configItemDetails.couponConventionPaymentDayConvention,
-            couponConventionTreasuryTermCoupon: configItemDetails.couponConventionTreasuryTermCoupon,
-            couponConventionEndOfMonthConvention: configItemDetails.couponConventionEndOfMonthConvention,
-            couponConventionTreasuryTermCouponBase: configItemDetails.couponConventionTreasuryTermCouponBase,
-            couponConventionHolidayAdjustedCouponFlag: configItemDetails.couponConventionHolidayAdjustedCouponFlag,
-            couponConventionPaymentType: configItemDetails.couponConventionPaymentType,
-            couponConventionFixedRateDeCompounding: configItemDetails.couponConventionFixedRateDeCompounding,
-            couponConventionInclExclOneDay: configItemDetails.couponConventionInclExclOneDay,
-            couponConventionSequenceConvention: configItemDetails.couponConventionSequenceConvention,
-            oddCouponsAndRedempOddConvLastCoupon: configItemDetails.oddCouponsAndRedempOddConvLastCoupon,
-            oddCouponsAndRedempOddConvLastRedeption: configItemDetails.oddCouponsAndRedempOddConvLastRedeption,
-            sequenceConventionRedemption: configItemDetails.sequenceConventionRedemption,
-            couponConventionsDayCount: configItemDetails.couponConventionsDayCount,
-            accruedInterestConventionsInterestType: configItemDetails.accruedInterestConventionsInterestType,
-            accruedInterestConventionsTreasuryProduct: configItemDetails.accruedInterestConventionsTreasuryProduct,
-            accruedInterestConventionsDayCountConvention: configItemDetails.accruedInterestConventionsDayCountConvention,
-            accruedInterestConventionsCalculationMethod: configItemDetails.accruedInterestConventionsCalculationMethod,
-            floatingRatesReferenceRate: configItemDetails.floatingRatesReferenceRate,
-            floatingRatesSpreadRate: configItemDetails.floatingRatesSpreadRate,
-            interestLookBackPeriod: configItemDetails.interestLookBackPeriod,
-            interestMultiplierFactor: configItemDetails.interestMultiplierFactor,
-            interestAdjustmentFixingDays: configItemDetails.interestAdjustmentFixingDays,
-            defaultFixingDate: configItemDetails.defaultFixingDate,
-            defaultFixingRate: configItemDetails.defaultFixingRate,
-            fixingTerm: configItemDetails.fixingTerm,
-            fixingUnits: configItemDetails.fixingUnits,
-            rateResetHolidayCalender: configItemDetails.rateResetHolidayCalender,
-            compoundingConvention: configItemDetails.compoundingConvention,
-            spreadConventionOrCompounding: configItemDetails.spreadConventionOrCompounding,
-            couponRateMinimum: configItemDetails.couponRateMinimum,
-            couponRateMaximum: configItemDetails.couponRateMaximum,
-            alternativeSecurityIdIdentificationSystem: configItemDetails.alternativeSecurityIdIdentificationSystem,
-            alternativeSecurityIdLongSecurityName: configItemDetails.alternativeSecurityIdLongSecurityName,
-            alternativeSecurityIdCusip: configItemDetails.alternativeSecurityIdCusip,
-            alternativeSecurityIdIsin: configItemDetails.alternativeSecurityIdIsin,
-            putCalls: configItemDetails.putCalls,
-            clientSpecificFields: configItemDetails.clientSpecificFields,
-            attachments: configItemDetails.attachments,
-            comments: configItemDetails.comments,
-            changedByUser: configItemDetails.changedByUser,
-            changedDate: configItemDetails.changedDate,
-            createdByUser: configItemDetails.createdByUser,
-            isDeleted: configItemDetails.isDeleted,
-            deletedBy: configItemDetails.deletedBy,
-            deleteReason: configItemDetails.deleteReason,
-            actionItemId: configItemDetails._id,
-            action: helper.sysConst.permissionAccessTypes.EDIT,
-            actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
-        }, {session: session});
-        await auditData.save();
-
-        callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
     },
     updatePutCall: async (req, data, session, callback) => {
-        let id = req.validParamId;
+        try {
+            let id = req.validParamId;
 
-        let configItem = await BondSecurityModel.find({_id: id, isDeleted: false});
+            let configItem = await BondSecurityModel.find({_id: id, isDeleted: false});
 
-        if (configItem.length === 0) {
-            return callback({notFound: true}, null, `Bond Security with id => ${id} not found or deleted!`);
+            if (configItem.length === 0) {
+                return callback({notFound: true}, null, `Bond Security with id => ${id} not found or deleted!`);
+            }
+
+            data.changedByUser = req.appCurrentUserData._id;
+            data.changedDate = new Date();
+
+            await BondSecurityModel.updateOne({_id: id}, data).session(session);
+
+            let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
+            configItemDetails = configItemDetails[0];
+
+            const auditData = new BondSecurityModel({
+                securityId: configItemDetails.securityId,
+                ISIN: configItemDetails.ISIN,
+                userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
+                name: configItemDetails.name,
+                securityCode: configItemDetails.securityCode,
+                currency: configItemDetails.currency,
+                paymentHolidayCalender: configItemDetails.paymentHolidayCalender,
+                exchange: configItemDetails.exchange,
+                quoted: configItemDetails.quoted,
+                minTradeVolume: configItemDetails.minTradeVolume,
+                volume: configItemDetails.volume,
+                issuer: configItemDetails.issuer,
+                issueDate: configItemDetails.issueDate,
+                issuePrice: configItemDetails.issuePrice,
+                redemptionPrice: configItemDetails.redemptionPrice,
+                redemptionCurrency: configItemDetails.redemptionCurrency,
+                interestType: configItemDetails.interestType,
+                couponRate: configItemDetails.couponRate,
+                maturityDate: configItemDetails.maturityDate,
+                structure: configItemDetails.structure,
+                firstRedemptionDate: configItemDetails.firstRedemptionDate,
+                couponTerm: configItemDetails.couponTerm,
+                couponTermUnit: configItemDetails.couponTermUnit,
+                redemptionTerm: configItemDetails.redemptionTerm,
+                redemptionTermUnit: configItemDetails.redemptionTermUnit,
+                inceptionRedemptionRate: configItemDetails.inceptionRedemptionRate,
+                currentPoolFactor: configItemDetails.currentPoolFactor,
+                firstCouponPaymentDate: configItemDetails.firstCouponPaymentDate,
+                quotation: configItemDetails.quotation,
+                settlementDays: configItemDetails.settlementDays,
+                quoteType: configItemDetails.quoteType,
+                quotingLotSize: configItemDetails.quotingLotSize,
+                quotingFaceValue: configItemDetails.quotingFaceValue,
+                couponConventionDayCount: configItemDetails.couponConventionDayCount,
+                couponConventionPaymentDayConvention: configItemDetails.couponConventionPaymentDayConvention,
+                couponConventionTreasuryTermCoupon: configItemDetails.couponConventionTreasuryTermCoupon,
+                couponConventionEndOfMonthConvention: configItemDetails.couponConventionEndOfMonthConvention,
+                couponConventionTreasuryTermCouponBase: configItemDetails.couponConventionTreasuryTermCouponBase,
+                couponConventionHolidayAdjustedCouponFlag: configItemDetails.couponConventionHolidayAdjustedCouponFlag,
+                couponConventionPaymentType: configItemDetails.couponConventionPaymentType,
+                couponConventionFixedRateDeCompounding: configItemDetails.couponConventionFixedRateDeCompounding,
+                couponConventionInclExclOneDay: configItemDetails.couponConventionInclExclOneDay,
+                couponConventionSequenceConvention: configItemDetails.couponConventionSequenceConvention,
+                oddCouponsAndRedempOddConvLastCoupon: configItemDetails.oddCouponsAndRedempOddConvLastCoupon,
+                oddCouponsAndRedempOddConvLastRedeption: configItemDetails.oddCouponsAndRedempOddConvLastRedeption,
+                sequenceConventionRedemption: configItemDetails.sequenceConventionRedemption,
+                couponConventionsDayCount: configItemDetails.couponConventionsDayCount,
+                accruedInterestConventionsInterestType: configItemDetails.accruedInterestConventionsInterestType,
+                accruedInterestConventionsTreasuryProduct: configItemDetails.accruedInterestConventionsTreasuryProduct,
+                accruedInterestConventionsDayCountConvention: configItemDetails.accruedInterestConventionsDayCountConvention,
+                accruedInterestConventionsCalculationMethod: configItemDetails.accruedInterestConventionsCalculationMethod,
+                floatingRatesReferenceRate: configItemDetails.floatingRatesReferenceRate,
+                floatingRatesSpreadRate: configItemDetails.floatingRatesSpreadRate,
+                interestLookBackPeriod: configItemDetails.interestLookBackPeriod,
+                interestMultiplierFactor: configItemDetails.interestMultiplierFactor,
+                interestAdjustmentFixingDays: configItemDetails.interestAdjustmentFixingDays,
+                defaultFixingDate: configItemDetails.defaultFixingDate,
+                defaultFixingRate: configItemDetails.defaultFixingRate,
+                fixingTerm: configItemDetails.fixingTerm,
+                fixingUnits: configItemDetails.fixingUnits,
+                rateResetHolidayCalender: configItemDetails.rateResetHolidayCalender,
+                compoundingConvention: configItemDetails.compoundingConvention,
+                spreadConventionOrCompounding: configItemDetails.spreadConventionOrCompounding,
+                couponRateMinimum: configItemDetails.couponRateMinimum,
+                couponRateMaximum: configItemDetails.couponRateMaximum,
+                alternativeSecurityIdIdentificationSystem: configItemDetails.alternativeSecurityIdIdentificationSystem,
+                alternativeSecurityIdLongSecurityName: configItemDetails.alternativeSecurityIdLongSecurityName,
+                alternativeSecurityIdCusip: configItemDetails.alternativeSecurityIdCusip,
+                alternativeSecurityIdIsin: configItemDetails.alternativeSecurityIdIsin,
+                putCalls: configItemDetails.putCalls,
+                clientSpecificFields: configItemDetails.clientSpecificFields,
+                attachments: configItemDetails.attachments,
+                comments: configItemDetails.comments,
+                changedByUser: configItemDetails.changedByUser,
+                changedDate: configItemDetails.changedDate,
+                createdByUser: configItemDetails.createdByUser,
+                isDeleted: configItemDetails.isDeleted,
+                deletedBy: configItemDetails.deletedBy,
+                deleteReason: configItemDetails.deleteReason,
+                actionItemId: configItemDetails._id,
+                action: helper.sysConst.permissionAccessTypes.EDIT,
+                actionDate: new Date(),
+                actionBy: configItemDetails.createdByUser,
+            }, {session: session});
+            await auditData.save();
+
+            callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
+        } catch (e) {
+            callback(e, null, 'Server Error!');
         }
-
-        data.changedByUser = req.appCurrentUserData._id;
-        data.changedDate = new Date();
-
-        await BondSecurityModel.updateOne({_id: id}, data).session(session);
-
-        let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
-        configItemDetails = configItemDetails[0];
-
-        const auditData = new BondSecurityModel({
-            securityId: configItemDetails.securityId,
-            ISIN: configItemDetails.ISIN,
-            userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
-            name: configItemDetails.name,
-            securityCode: configItemDetails.securityCode,
-            currency: configItemDetails.currency,
-            paymentHolidayCalender: configItemDetails.paymentHolidayCalender,
-            exchange: configItemDetails.exchange,
-            quoted: configItemDetails.quoted,
-            minTradeVolume: configItemDetails.minTradeVolume,
-            volume: configItemDetails.volume,
-            issuer: configItemDetails.issuer,
-            issueDate: configItemDetails.issueDate,
-            issuePrice: configItemDetails.issuePrice,
-            redemptionPrice: configItemDetails.redemptionPrice,
-            redemptionCurrency: configItemDetails.redemptionCurrency,
-            interestType: configItemDetails.interestType,
-            couponRate: configItemDetails.couponRate,
-            maturityDate: configItemDetails.maturityDate,
-            structure: configItemDetails.structure,
-            firstRedemptionDate: configItemDetails.firstRedemptionDate,
-            couponTerm: configItemDetails.couponTerm,
-            couponTermUnit: configItemDetails.couponTermUnit,
-            redemptionTerm: configItemDetails.redemptionTerm,
-            redemptionTermUnit: configItemDetails.redemptionTermUnit,
-            inceptionRedemptionRate: configItemDetails.inceptionRedemptionRate,
-            currentPoolFactor: configItemDetails.currentPoolFactor,
-            firstCouponPaymentDate: configItemDetails.firstCouponPaymentDate,
-            quotation: configItemDetails.quotation,
-            settlementDays: configItemDetails.settlementDays,
-            quoteType: configItemDetails.quoteType,
-            quotingLotSize: configItemDetails.quotingLotSize,
-            quotingFaceValue: configItemDetails.quotingFaceValue,
-            couponConventionDayCount: configItemDetails.couponConventionDayCount,
-            couponConventionPaymentDayConvention: configItemDetails.couponConventionPaymentDayConvention,
-            couponConventionTreasuryTermCoupon: configItemDetails.couponConventionTreasuryTermCoupon,
-            couponConventionEndOfMonthConvention: configItemDetails.couponConventionEndOfMonthConvention,
-            couponConventionTreasuryTermCouponBase: configItemDetails.couponConventionTreasuryTermCouponBase,
-            couponConventionHolidayAdjustedCouponFlag: configItemDetails.couponConventionHolidayAdjustedCouponFlag,
-            couponConventionPaymentType: configItemDetails.couponConventionPaymentType,
-            couponConventionFixedRateDeCompounding: configItemDetails.couponConventionFixedRateDeCompounding,
-            couponConventionInclExclOneDay: configItemDetails.couponConventionInclExclOneDay,
-            couponConventionSequenceConvention: configItemDetails.couponConventionSequenceConvention,
-            oddCouponsAndRedempOddConvLastCoupon: configItemDetails.oddCouponsAndRedempOddConvLastCoupon,
-            oddCouponsAndRedempOddConvLastRedeption: configItemDetails.oddCouponsAndRedempOddConvLastRedeption,
-            sequenceConventionRedemption: configItemDetails.sequenceConventionRedemption,
-            couponConventionsDayCount: configItemDetails.couponConventionsDayCount,
-            accruedInterestConventionsInterestType: configItemDetails.accruedInterestConventionsInterestType,
-            accruedInterestConventionsTreasuryProduct: configItemDetails.accruedInterestConventionsTreasuryProduct,
-            accruedInterestConventionsDayCountConvention: configItemDetails.accruedInterestConventionsDayCountConvention,
-            accruedInterestConventionsCalculationMethod: configItemDetails.accruedInterestConventionsCalculationMethod,
-            floatingRatesReferenceRate: configItemDetails.floatingRatesReferenceRate,
-            floatingRatesSpreadRate: configItemDetails.floatingRatesSpreadRate,
-            interestLookBackPeriod: configItemDetails.interestLookBackPeriod,
-            interestMultiplierFactor: configItemDetails.interestMultiplierFactor,
-            interestAdjustmentFixingDays: configItemDetails.interestAdjustmentFixingDays,
-            defaultFixingDate: configItemDetails.defaultFixingDate,
-            defaultFixingRate: configItemDetails.defaultFixingRate,
-            fixingTerm: configItemDetails.fixingTerm,
-            fixingUnits: configItemDetails.fixingUnits,
-            rateResetHolidayCalender: configItemDetails.rateResetHolidayCalender,
-            compoundingConvention: configItemDetails.compoundingConvention,
-            spreadConventionOrCompounding: configItemDetails.spreadConventionOrCompounding,
-            couponRateMinimum: configItemDetails.couponRateMinimum,
-            couponRateMaximum: configItemDetails.couponRateMaximum,
-            alternativeSecurityIdIdentificationSystem: configItemDetails.alternativeSecurityIdIdentificationSystem,
-            alternativeSecurityIdLongSecurityName: configItemDetails.alternativeSecurityIdLongSecurityName,
-            alternativeSecurityIdCusip: configItemDetails.alternativeSecurityIdCusip,
-            alternativeSecurityIdIsin: configItemDetails.alternativeSecurityIdIsin,
-            putCalls: configItemDetails.putCalls,
-            clientSpecificFields: configItemDetails.clientSpecificFields,
-            attachments: configItemDetails.attachments,
-            comments: configItemDetails.comments,
-            changedByUser: configItemDetails.changedByUser,
-            changedDate: configItemDetails.changedDate,
-            createdByUser: configItemDetails.createdByUser,
-            isDeleted: configItemDetails.isDeleted,
-            deletedBy: configItemDetails.deletedBy,
-            deleteReason: configItemDetails.deleteReason,
-            actionItemId: configItemDetails._id,
-            action: helper.sysConst.permissionAccessTypes.EDIT,
-            actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
-        }, {session: session});
-        await auditData.save();
-
-        callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
     },
     updateClientSpecificFields: async (req, data, session, callback) => {
-        let id = req.validParamId;
+        try {
+            let id = req.validParamId;
 
-        let configItem = await BondSecurityModel.find({_id: id, isDeleted: false});
+            let configItem = await BondSecurityModel.find({_id: id, isDeleted: false});
 
-        if (configItem.length === 0) {
-            return callback({notFound: true}, null, `Bond Security with id => ${id} not found or deleted!`);
+            if (configItem.length === 0) {
+                return callback({notFound: true}, null, `Bond Security with id => ${id} not found or deleted!`);
+            }
+
+            data.changedByUser = req.appCurrentUserData._id;
+            data.changedDate = new Date();
+
+            await BondSecurityModel.updateOne({_id: id}, data).session(session);
+
+            let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
+            configItemDetails = configItemDetails[0];
+
+            const auditData = new BondSecurityModel({
+                securityId: configItemDetails.securityId,
+                ISIN: configItemDetails.ISIN,
+                userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
+                name: configItemDetails.name,
+                securityCode: configItemDetails.securityCode,
+                currency: configItemDetails.currency,
+                paymentHolidayCalender: configItemDetails.paymentHolidayCalender,
+                exchange: configItemDetails.exchange,
+                quoted: configItemDetails.quoted,
+                minTradeVolume: configItemDetails.minTradeVolume,
+                volume: configItemDetails.volume,
+                issuer: configItemDetails.issuer,
+                issueDate: configItemDetails.issueDate,
+                issuePrice: configItemDetails.issuePrice,
+                redemptionPrice: configItemDetails.redemptionPrice,
+                redemptionCurrency: configItemDetails.redemptionCurrency,
+                interestType: configItemDetails.interestType,
+                couponRate: configItemDetails.couponRate,
+                maturityDate: configItemDetails.maturityDate,
+                structure: configItemDetails.structure,
+                firstRedemptionDate: configItemDetails.firstRedemptionDate,
+                couponTerm: configItemDetails.couponTerm,
+                couponTermUnit: configItemDetails.couponTermUnit,
+                redemptionTerm: configItemDetails.redemptionTerm,
+                redemptionTermUnit: configItemDetails.redemptionTermUnit,
+                inceptionRedemptionRate: configItemDetails.inceptionRedemptionRate,
+                currentPoolFactor: configItemDetails.currentPoolFactor,
+                firstCouponPaymentDate: configItemDetails.firstCouponPaymentDate,
+                quotation: configItemDetails.quotation,
+                settlementDays: configItemDetails.settlementDays,
+                quoteType: configItemDetails.quoteType,
+                quotingLotSize: configItemDetails.quotingLotSize,
+                quotingFaceValue: configItemDetails.quotingFaceValue,
+                couponConventionDayCount: configItemDetails.couponConventionDayCount,
+                couponConventionPaymentDayConvention: configItemDetails.couponConventionPaymentDayConvention,
+                couponConventionTreasuryTermCoupon: configItemDetails.couponConventionTreasuryTermCoupon,
+                couponConventionEndOfMonthConvention: configItemDetails.couponConventionEndOfMonthConvention,
+                couponConventionTreasuryTermCouponBase: configItemDetails.couponConventionTreasuryTermCouponBase,
+                couponConventionHolidayAdjustedCouponFlag: configItemDetails.couponConventionHolidayAdjustedCouponFlag,
+                couponConventionPaymentType: configItemDetails.couponConventionPaymentType,
+                couponConventionFixedRateDeCompounding: configItemDetails.couponConventionFixedRateDeCompounding,
+                couponConventionInclExclOneDay: configItemDetails.couponConventionInclExclOneDay,
+                couponConventionSequenceConvention: configItemDetails.couponConventionSequenceConvention,
+                oddCouponsAndRedempOddConvLastCoupon: configItemDetails.oddCouponsAndRedempOddConvLastCoupon,
+                oddCouponsAndRedempOddConvLastRedeption: configItemDetails.oddCouponsAndRedempOddConvLastRedeption,
+                sequenceConventionRedemption: configItemDetails.sequenceConventionRedemption,
+                couponConventionsDayCount: configItemDetails.couponConventionsDayCount,
+                accruedInterestConventionsInterestType: configItemDetails.accruedInterestConventionsInterestType,
+                accruedInterestConventionsTreasuryProduct: configItemDetails.accruedInterestConventionsTreasuryProduct,
+                accruedInterestConventionsDayCountConvention: configItemDetails.accruedInterestConventionsDayCountConvention,
+                accruedInterestConventionsCalculationMethod: configItemDetails.accruedInterestConventionsCalculationMethod,
+                floatingRatesReferenceRate: configItemDetails.floatingRatesReferenceRate,
+                floatingRatesSpreadRate: configItemDetails.floatingRatesSpreadRate,
+                interestLookBackPeriod: configItemDetails.interestLookBackPeriod,
+                interestMultiplierFactor: configItemDetails.interestMultiplierFactor,
+                interestAdjustmentFixingDays: configItemDetails.interestAdjustmentFixingDays,
+                defaultFixingDate: configItemDetails.defaultFixingDate,
+                defaultFixingRate: configItemDetails.defaultFixingRate,
+                fixingTerm: configItemDetails.fixingTerm,
+                fixingUnits: configItemDetails.fixingUnits,
+                rateResetHolidayCalender: configItemDetails.rateResetHolidayCalender,
+                compoundingConvention: configItemDetails.compoundingConvention,
+                spreadConventionOrCompounding: configItemDetails.spreadConventionOrCompounding,
+                couponRateMinimum: configItemDetails.couponRateMinimum,
+                couponRateMaximum: configItemDetails.couponRateMaximum,
+                alternativeSecurityIdIdentificationSystem: configItemDetails.alternativeSecurityIdIdentificationSystem,
+                alternativeSecurityIdLongSecurityName: configItemDetails.alternativeSecurityIdLongSecurityName,
+                alternativeSecurityIdCusip: configItemDetails.alternativeSecurityIdCusip,
+                alternativeSecurityIdIsin: configItemDetails.alternativeSecurityIdIsin,
+                putCalls: configItemDetails.putCalls,
+                clientSpecificFields: configItemDetails.clientSpecificFields,
+                attachments: configItemDetails.attachments,
+                comments: configItemDetails.comments,
+                changedByUser: configItemDetails.changedByUser,
+                changedDate: configItemDetails.changedDate,
+                createdByUser: configItemDetails.createdByUser,
+                isDeleted: configItemDetails.isDeleted,
+                deletedBy: configItemDetails.deletedBy,
+                deleteReason: configItemDetails.deleteReason,
+                actionItemId: configItemDetails._id,
+                action: helper.sysConst.permissionAccessTypes.EDIT,
+                actionDate: new Date(),
+                actionBy: configItemDetails.createdByUser,
+            }, {session: session});
+            await auditData.save();
+
+            callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
+        } catch (e) {
+            callback(e, null, 'Server Error!');
         }
-
-        data.changedByUser = req.appCurrentUserData._id;
-        data.changedDate = new Date();
-
-        await BondSecurityModel.updateOne({_id: id}, data).session(session);
-
-        let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
-        configItemDetails = configItemDetails[0];
-
-        const auditData = new BondSecurityModel({
-            securityId: configItemDetails.securityId,
-            ISIN: configItemDetails.ISIN,
-            userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
-            name: configItemDetails.name,
-            securityCode: configItemDetails.securityCode,
-            currency: configItemDetails.currency,
-            paymentHolidayCalender: configItemDetails.paymentHolidayCalender,
-            exchange: configItemDetails.exchange,
-            quoted: configItemDetails.quoted,
-            minTradeVolume: configItemDetails.minTradeVolume,
-            volume: configItemDetails.volume,
-            issuer: configItemDetails.issuer,
-            issueDate: configItemDetails.issueDate,
-            issuePrice: configItemDetails.issuePrice,
-            redemptionPrice: configItemDetails.redemptionPrice,
-            redemptionCurrency: configItemDetails.redemptionCurrency,
-            interestType: configItemDetails.interestType,
-            couponRate: configItemDetails.couponRate,
-            maturityDate: configItemDetails.maturityDate,
-            structure: configItemDetails.structure,
-            firstRedemptionDate: configItemDetails.firstRedemptionDate,
-            couponTerm: configItemDetails.couponTerm,
-            couponTermUnit: configItemDetails.couponTermUnit,
-            redemptionTerm: configItemDetails.redemptionTerm,
-            redemptionTermUnit: configItemDetails.redemptionTermUnit,
-            inceptionRedemptionRate: configItemDetails.inceptionRedemptionRate,
-            currentPoolFactor: configItemDetails.currentPoolFactor,
-            firstCouponPaymentDate: configItemDetails.firstCouponPaymentDate,
-            quotation: configItemDetails.quotation,
-            settlementDays: configItemDetails.settlementDays,
-            quoteType: configItemDetails.quoteType,
-            quotingLotSize: configItemDetails.quotingLotSize,
-            quotingFaceValue: configItemDetails.quotingFaceValue,
-            couponConventionDayCount: configItemDetails.couponConventionDayCount,
-            couponConventionPaymentDayConvention: configItemDetails.couponConventionPaymentDayConvention,
-            couponConventionTreasuryTermCoupon: configItemDetails.couponConventionTreasuryTermCoupon,
-            couponConventionEndOfMonthConvention: configItemDetails.couponConventionEndOfMonthConvention,
-            couponConventionTreasuryTermCouponBase: configItemDetails.couponConventionTreasuryTermCouponBase,
-            couponConventionHolidayAdjustedCouponFlag: configItemDetails.couponConventionHolidayAdjustedCouponFlag,
-            couponConventionPaymentType: configItemDetails.couponConventionPaymentType,
-            couponConventionFixedRateDeCompounding: configItemDetails.couponConventionFixedRateDeCompounding,
-            couponConventionInclExclOneDay: configItemDetails.couponConventionInclExclOneDay,
-            couponConventionSequenceConvention: configItemDetails.couponConventionSequenceConvention,
-            oddCouponsAndRedempOddConvLastCoupon: configItemDetails.oddCouponsAndRedempOddConvLastCoupon,
-            oddCouponsAndRedempOddConvLastRedeption: configItemDetails.oddCouponsAndRedempOddConvLastRedeption,
-            sequenceConventionRedemption: configItemDetails.sequenceConventionRedemption,
-            couponConventionsDayCount: configItemDetails.couponConventionsDayCount,
-            accruedInterestConventionsInterestType: configItemDetails.accruedInterestConventionsInterestType,
-            accruedInterestConventionsTreasuryProduct: configItemDetails.accruedInterestConventionsTreasuryProduct,
-            accruedInterestConventionsDayCountConvention: configItemDetails.accruedInterestConventionsDayCountConvention,
-            accruedInterestConventionsCalculationMethod: configItemDetails.accruedInterestConventionsCalculationMethod,
-            floatingRatesReferenceRate: configItemDetails.floatingRatesReferenceRate,
-            floatingRatesSpreadRate: configItemDetails.floatingRatesSpreadRate,
-            interestLookBackPeriod: configItemDetails.interestLookBackPeriod,
-            interestMultiplierFactor: configItemDetails.interestMultiplierFactor,
-            interestAdjustmentFixingDays: configItemDetails.interestAdjustmentFixingDays,
-            defaultFixingDate: configItemDetails.defaultFixingDate,
-            defaultFixingRate: configItemDetails.defaultFixingRate,
-            fixingTerm: configItemDetails.fixingTerm,
-            fixingUnits: configItemDetails.fixingUnits,
-            rateResetHolidayCalender: configItemDetails.rateResetHolidayCalender,
-            compoundingConvention: configItemDetails.compoundingConvention,
-            spreadConventionOrCompounding: configItemDetails.spreadConventionOrCompounding,
-            couponRateMinimum: configItemDetails.couponRateMinimum,
-            couponRateMaximum: configItemDetails.couponRateMaximum,
-            alternativeSecurityIdIdentificationSystem: configItemDetails.alternativeSecurityIdIdentificationSystem,
-            alternativeSecurityIdLongSecurityName: configItemDetails.alternativeSecurityIdLongSecurityName,
-            alternativeSecurityIdCusip: configItemDetails.alternativeSecurityIdCusip,
-            alternativeSecurityIdIsin: configItemDetails.alternativeSecurityIdIsin,
-            putCalls: configItemDetails.putCalls,
-            clientSpecificFields: configItemDetails.clientSpecificFields,
-            attachments: configItemDetails.attachments,
-            comments: configItemDetails.comments,
-            changedByUser: configItemDetails.changedByUser,
-            changedDate: configItemDetails.changedDate,
-            createdByUser: configItemDetails.createdByUser,
-            isDeleted: configItemDetails.isDeleted,
-            deletedBy: configItemDetails.deletedBy,
-            deleteReason: configItemDetails.deleteReason,
-            actionItemId: configItemDetails._id,
-            action: helper.sysConst.permissionAccessTypes.EDIT,
-            actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
-        }, {session: session});
-        await auditData.save();
-
-        callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
     },
     updateCommentsAndAttachments: async (req, data, session, callback) => {
-        let id = req.validParamId;
+        try {
+            let id = req.validParamId;
 
-        let configItem = await BondSecurityModel.find({_id: id, isDeleted: false});
+            let configItem = await BondSecurityModel.find({_id: id, isDeleted: false});
 
-        if (configItem.length === 0) {
-            return callback({notFound: true}, null, `Bond Security with id => ${id} not found or deleted!`);
+            if (configItem.length === 0) {
+                return callback({notFound: true}, null, `Bond Security with id => ${id} not found or deleted!`);
+            }
+            configItem = configItem[0];
+
+            data.attachments = [...configItem.attachments, ...data.attachments];
+
+            data.changedByUser = req.appCurrentUserData._id;
+            data.changedDate = new Date();
+
+            await BondSecurityModel.updateOne({_id: id}, data).session(session);
+
+            let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
+            configItemDetails = configItemDetails[0];
+
+            const auditData = new BondSecurityModel({
+                securityId: configItemDetails.securityId,
+                ISIN: configItemDetails.ISIN,
+                userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
+                name: configItemDetails.name,
+                securityCode: configItemDetails.securityCode,
+                currency: configItemDetails.currency,
+                paymentHolidayCalender: configItemDetails.paymentHolidayCalender,
+                exchange: configItemDetails.exchange,
+                quoted: configItemDetails.quoted,
+                minTradeVolume: configItemDetails.minTradeVolume,
+                volume: configItemDetails.volume,
+                issuer: configItemDetails.issuer,
+                issueDate: configItemDetails.issueDate,
+                issuePrice: configItemDetails.issuePrice,
+                redemptionPrice: configItemDetails.redemptionPrice,
+                redemptionCurrency: configItemDetails.redemptionCurrency,
+                interestType: configItemDetails.interestType,
+                couponRate: configItemDetails.couponRate,
+                maturityDate: configItemDetails.maturityDate,
+                structure: configItemDetails.structure,
+                firstRedemptionDate: configItemDetails.firstRedemptionDate,
+                couponTerm: configItemDetails.couponTerm,
+                couponTermUnit: configItemDetails.couponTermUnit,
+                redemptionTerm: configItemDetails.redemptionTerm,
+                redemptionTermUnit: configItemDetails.redemptionTermUnit,
+                inceptionRedemptionRate: configItemDetails.inceptionRedemptionRate,
+                currentPoolFactor: configItemDetails.currentPoolFactor,
+                firstCouponPaymentDate: configItemDetails.firstCouponPaymentDate,
+                quotation: configItemDetails.quotation,
+                settlementDays: configItemDetails.settlementDays,
+                quoteType: configItemDetails.quoteType,
+                quotingLotSize: configItemDetails.quotingLotSize,
+                quotingFaceValue: configItemDetails.quotingFaceValue,
+                couponConventionDayCount: configItemDetails.couponConventionDayCount,
+                couponConventionPaymentDayConvention: configItemDetails.couponConventionPaymentDayConvention,
+                couponConventionTreasuryTermCoupon: configItemDetails.couponConventionTreasuryTermCoupon,
+                couponConventionEndOfMonthConvention: configItemDetails.couponConventionEndOfMonthConvention,
+                couponConventionTreasuryTermCouponBase: configItemDetails.couponConventionTreasuryTermCouponBase,
+                couponConventionHolidayAdjustedCouponFlag: configItemDetails.couponConventionHolidayAdjustedCouponFlag,
+                couponConventionPaymentType: configItemDetails.couponConventionPaymentType,
+                couponConventionFixedRateDeCompounding: configItemDetails.couponConventionFixedRateDeCompounding,
+                couponConventionInclExclOneDay: configItemDetails.couponConventionInclExclOneDay,
+                couponConventionSequenceConvention: configItemDetails.couponConventionSequenceConvention,
+                oddCouponsAndRedempOddConvLastCoupon: configItemDetails.oddCouponsAndRedempOddConvLastCoupon,
+                oddCouponsAndRedempOddConvLastRedeption: configItemDetails.oddCouponsAndRedempOddConvLastRedeption,
+                sequenceConventionRedemption: configItemDetails.sequenceConventionRedemption,
+                couponConventionsDayCount: configItemDetails.couponConventionsDayCount,
+                accruedInterestConventionsInterestType: configItemDetails.accruedInterestConventionsInterestType,
+                accruedInterestConventionsTreasuryProduct: configItemDetails.accruedInterestConventionsTreasuryProduct,
+                accruedInterestConventionsDayCountConvention: configItemDetails.accruedInterestConventionsDayCountConvention,
+                accruedInterestConventionsCalculationMethod: configItemDetails.accruedInterestConventionsCalculationMethod,
+                floatingRatesReferenceRate: configItemDetails.floatingRatesReferenceRate,
+                floatingRatesSpreadRate: configItemDetails.floatingRatesSpreadRate,
+                interestLookBackPeriod: configItemDetails.interestLookBackPeriod,
+                interestMultiplierFactor: configItemDetails.interestMultiplierFactor,
+                interestAdjustmentFixingDays: configItemDetails.interestAdjustmentFixingDays,
+                defaultFixingDate: configItemDetails.defaultFixingDate,
+                defaultFixingRate: configItemDetails.defaultFixingRate,
+                fixingTerm: configItemDetails.fixingTerm,
+                fixingUnits: configItemDetails.fixingUnits,
+                rateResetHolidayCalender: configItemDetails.rateResetHolidayCalender,
+                compoundingConvention: configItemDetails.compoundingConvention,
+                spreadConventionOrCompounding: configItemDetails.spreadConventionOrCompounding,
+                couponRateMinimum: configItemDetails.couponRateMinimum,
+                couponRateMaximum: configItemDetails.couponRateMaximum,
+                alternativeSecurityIdIdentificationSystem: configItemDetails.alternativeSecurityIdIdentificationSystem,
+                alternativeSecurityIdLongSecurityName: configItemDetails.alternativeSecurityIdLongSecurityName,
+                alternativeSecurityIdCusip: configItemDetails.alternativeSecurityIdCusip,
+                alternativeSecurityIdIsin: configItemDetails.alternativeSecurityIdIsin,
+                putCalls: configItemDetails.putCalls,
+                clientSpecificFields: configItemDetails.clientSpecificFields,
+                attachments: configItemDetails.attachments,
+                comments: configItemDetails.comments,
+                changedByUser: configItemDetails.changedByUser,
+                changedDate: configItemDetails.changedDate,
+                createdByUser: configItemDetails.createdByUser,
+                isDeleted: configItemDetails.isDeleted,
+                deletedBy: configItemDetails.deletedBy,
+                deleteReason: configItemDetails.deleteReason,
+                actionItemId: configItemDetails._id,
+                action: helper.sysConst.permissionAccessTypes.EDIT,
+                actionDate: new Date(),
+                actionBy: configItemDetails.createdByUser,
+            }, {session: session});
+            await auditData.save();
+
+            callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
+        } catch (e) {
+            callback(e, null, 'Server Error!');
         }
-        configItem = configItem[0];
-
-        data.attachments = [...configItem.attachments, ...data.attachments];
-
-        data.changedByUser = req.appCurrentUserData._id;
-        data.changedDate = new Date();
-
-        await BondSecurityModel.updateOne({_id: id}, data).session(session);
-
-        let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
-        configItemDetails = configItemDetails[0];
-
-        const auditData = new BondSecurityModel({
-            securityId: configItemDetails.securityId,
-            ISIN: configItemDetails.ISIN,
-            userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
-            name: configItemDetails.name,
-            securityCode: configItemDetails.securityCode,
-            currency: configItemDetails.currency,
-            paymentHolidayCalender: configItemDetails.paymentHolidayCalender,
-            exchange: configItemDetails.exchange,
-            quoted: configItemDetails.quoted,
-            minTradeVolume: configItemDetails.minTradeVolume,
-            volume: configItemDetails.volume,
-            issuer: configItemDetails.issuer,
-            issueDate: configItemDetails.issueDate,
-            issuePrice: configItemDetails.issuePrice,
-            redemptionPrice: configItemDetails.redemptionPrice,
-            redemptionCurrency: configItemDetails.redemptionCurrency,
-            interestType: configItemDetails.interestType,
-            couponRate: configItemDetails.couponRate,
-            maturityDate: configItemDetails.maturityDate,
-            structure: configItemDetails.structure,
-            firstRedemptionDate: configItemDetails.firstRedemptionDate,
-            couponTerm: configItemDetails.couponTerm,
-            couponTermUnit: configItemDetails.couponTermUnit,
-            redemptionTerm: configItemDetails.redemptionTerm,
-            redemptionTermUnit: configItemDetails.redemptionTermUnit,
-            inceptionRedemptionRate: configItemDetails.inceptionRedemptionRate,
-            currentPoolFactor: configItemDetails.currentPoolFactor,
-            firstCouponPaymentDate: configItemDetails.firstCouponPaymentDate,
-            quotation: configItemDetails.quotation,
-            settlementDays: configItemDetails.settlementDays,
-            quoteType: configItemDetails.quoteType,
-            quotingLotSize: configItemDetails.quotingLotSize,
-            quotingFaceValue: configItemDetails.quotingFaceValue,
-            couponConventionDayCount: configItemDetails.couponConventionDayCount,
-            couponConventionPaymentDayConvention: configItemDetails.couponConventionPaymentDayConvention,
-            couponConventionTreasuryTermCoupon: configItemDetails.couponConventionTreasuryTermCoupon,
-            couponConventionEndOfMonthConvention: configItemDetails.couponConventionEndOfMonthConvention,
-            couponConventionTreasuryTermCouponBase: configItemDetails.couponConventionTreasuryTermCouponBase,
-            couponConventionHolidayAdjustedCouponFlag: configItemDetails.couponConventionHolidayAdjustedCouponFlag,
-            couponConventionPaymentType: configItemDetails.couponConventionPaymentType,
-            couponConventionFixedRateDeCompounding: configItemDetails.couponConventionFixedRateDeCompounding,
-            couponConventionInclExclOneDay: configItemDetails.couponConventionInclExclOneDay,
-            couponConventionSequenceConvention: configItemDetails.couponConventionSequenceConvention,
-            oddCouponsAndRedempOddConvLastCoupon: configItemDetails.oddCouponsAndRedempOddConvLastCoupon,
-            oddCouponsAndRedempOddConvLastRedeption: configItemDetails.oddCouponsAndRedempOddConvLastRedeption,
-            sequenceConventionRedemption: configItemDetails.sequenceConventionRedemption,
-            couponConventionsDayCount: configItemDetails.couponConventionsDayCount,
-            accruedInterestConventionsInterestType: configItemDetails.accruedInterestConventionsInterestType,
-            accruedInterestConventionsTreasuryProduct: configItemDetails.accruedInterestConventionsTreasuryProduct,
-            accruedInterestConventionsDayCountConvention: configItemDetails.accruedInterestConventionsDayCountConvention,
-            accruedInterestConventionsCalculationMethod: configItemDetails.accruedInterestConventionsCalculationMethod,
-            floatingRatesReferenceRate: configItemDetails.floatingRatesReferenceRate,
-            floatingRatesSpreadRate: configItemDetails.floatingRatesSpreadRate,
-            interestLookBackPeriod: configItemDetails.interestLookBackPeriod,
-            interestMultiplierFactor: configItemDetails.interestMultiplierFactor,
-            interestAdjustmentFixingDays: configItemDetails.interestAdjustmentFixingDays,
-            defaultFixingDate: configItemDetails.defaultFixingDate,
-            defaultFixingRate: configItemDetails.defaultFixingRate,
-            fixingTerm: configItemDetails.fixingTerm,
-            fixingUnits: configItemDetails.fixingUnits,
-            rateResetHolidayCalender: configItemDetails.rateResetHolidayCalender,
-            compoundingConvention: configItemDetails.compoundingConvention,
-            spreadConventionOrCompounding: configItemDetails.spreadConventionOrCompounding,
-            couponRateMinimum: configItemDetails.couponRateMinimum,
-            couponRateMaximum: configItemDetails.couponRateMaximum,
-            alternativeSecurityIdIdentificationSystem: configItemDetails.alternativeSecurityIdIdentificationSystem,
-            alternativeSecurityIdLongSecurityName: configItemDetails.alternativeSecurityIdLongSecurityName,
-            alternativeSecurityIdCusip: configItemDetails.alternativeSecurityIdCusip,
-            alternativeSecurityIdIsin: configItemDetails.alternativeSecurityIdIsin,
-            putCalls: configItemDetails.putCalls,
-            clientSpecificFields: configItemDetails.clientSpecificFields,
-            attachments: configItemDetails.attachments,
-            comments: configItemDetails.comments,
-            changedByUser: configItemDetails.changedByUser,
-            changedDate: configItemDetails.changedDate,
-            createdByUser: configItemDetails.createdByUser,
-            isDeleted: configItemDetails.isDeleted,
-            deletedBy: configItemDetails.deletedBy,
-            deleteReason: configItemDetails.deleteReason,
-            actionItemId: configItemDetails._id,
-            action: helper.sysConst.permissionAccessTypes.EDIT,
-            actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
-        }, {session: session});
-        await auditData.save();
-
-        callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
     },
     removeAttachments: async (req, data, session, callback) => {
-        let id = req.validParamId;
+        try {
+            let id = req.validParamId;
 
-        let configItem = await BondSecurityModel.find({_id: id, isDeleted: false});
+            let configItem = await BondSecurityModel.find({_id: id, isDeleted: false});
 
-        if (configItem.length === 0) {
-            return callback({notFound: true}, null, `Bond Security with id => ${id} not found or deleted!`);
-        }
-        configItem = configItem[0];
-
-        let attachments = [];
-
-        configItem.attachments.forEach((item) => {
-            if(item !== data.url){
-                attachments.push(item);
+            if (configItem.length === 0) {
+                return callback({notFound: true}, null, `Bond Security with id => ${id} not found or deleted!`);
             }
-        });
+            configItem = configItem[0];
 
-        data = {};
-        data.attachments = attachments;
-        data.changedByUser = req.appCurrentUserData._id;
-        data.changedDate = new Date();
+            let attachments = [];
 
-        await BondSecurityModel.updateOne({_id: id}, data).session(session);
+            configItem.attachments.forEach((item) => {
+                if (item !== data.url) {
+                    attachments.push(item);
+                }
+            });
 
-        let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
-        configItemDetails = configItemDetails[0];
+            data = {};
+            data.attachments = attachments;
+            data.changedByUser = req.appCurrentUserData._id;
+            data.changedDate = new Date();
 
-        const auditData = new BondSecurityModel({
-            securityId: configItemDetails.securityId,
-            ISIN: configItemDetails.ISIN,
-            userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
-            name: configItemDetails.name,
-            securityCode: configItemDetails.securityCode,
-            currency: configItemDetails.currency,
-            paymentHolidayCalender: configItemDetails.paymentHolidayCalender,
-            exchange: configItemDetails.exchange,
-            quoted: configItemDetails.quoted,
-            minTradeVolume: configItemDetails.minTradeVolume,
-            volume: configItemDetails.volume,
-            issuer: configItemDetails.issuer,
-            issueDate: configItemDetails.issueDate,
-            issuePrice: configItemDetails.issuePrice,
-            redemptionPrice: configItemDetails.redemptionPrice,
-            redemptionCurrency: configItemDetails.redemptionCurrency,
-            interestType: configItemDetails.interestType,
-            couponRate: configItemDetails.couponRate,
-            maturityDate: configItemDetails.maturityDate,
-            structure: configItemDetails.structure,
-            firstRedemptionDate: configItemDetails.firstRedemptionDate,
-            couponTerm: configItemDetails.couponTerm,
-            couponTermUnit: configItemDetails.couponTermUnit,
-            redemptionTerm: configItemDetails.redemptionTerm,
-            redemptionTermUnit: configItemDetails.redemptionTermUnit,
-            inceptionRedemptionRate: configItemDetails.inceptionRedemptionRate,
-            currentPoolFactor: configItemDetails.currentPoolFactor,
-            firstCouponPaymentDate: configItemDetails.firstCouponPaymentDate,
-            quotation: configItemDetails.quotation,
-            settlementDays: configItemDetails.settlementDays,
-            quoteType: configItemDetails.quoteType,
-            quotingLotSize: configItemDetails.quotingLotSize,
-            quotingFaceValue: configItemDetails.quotingFaceValue,
-            couponConventionDayCount: configItemDetails.couponConventionDayCount,
-            couponConventionPaymentDayConvention: configItemDetails.couponConventionPaymentDayConvention,
-            couponConventionTreasuryTermCoupon: configItemDetails.couponConventionTreasuryTermCoupon,
-            couponConventionEndOfMonthConvention: configItemDetails.couponConventionEndOfMonthConvention,
-            couponConventionTreasuryTermCouponBase: configItemDetails.couponConventionTreasuryTermCouponBase,
-            couponConventionHolidayAdjustedCouponFlag: configItemDetails.couponConventionHolidayAdjustedCouponFlag,
-            couponConventionPaymentType: configItemDetails.couponConventionPaymentType,
-            couponConventionFixedRateDeCompounding: configItemDetails.couponConventionFixedRateDeCompounding,
-            couponConventionInclExclOneDay: configItemDetails.couponConventionInclExclOneDay,
-            couponConventionSequenceConvention: configItemDetails.couponConventionSequenceConvention,
-            oddCouponsAndRedempOddConvLastCoupon: configItemDetails.oddCouponsAndRedempOddConvLastCoupon,
-            oddCouponsAndRedempOddConvLastRedeption: configItemDetails.oddCouponsAndRedempOddConvLastRedeption,
-            sequenceConventionRedemption: configItemDetails.sequenceConventionRedemption,
-            couponConventionsDayCount: configItemDetails.couponConventionsDayCount,
-            accruedInterestConventionsInterestType: configItemDetails.accruedInterestConventionsInterestType,
-            accruedInterestConventionsTreasuryProduct: configItemDetails.accruedInterestConventionsTreasuryProduct,
-            accruedInterestConventionsDayCountConvention: configItemDetails.accruedInterestConventionsDayCountConvention,
-            accruedInterestConventionsCalculationMethod: configItemDetails.accruedInterestConventionsCalculationMethod,
-            floatingRatesReferenceRate: configItemDetails.floatingRatesReferenceRate,
-            floatingRatesSpreadRate: configItemDetails.floatingRatesSpreadRate,
-            interestLookBackPeriod: configItemDetails.interestLookBackPeriod,
-            interestMultiplierFactor: configItemDetails.interestMultiplierFactor,
-            interestAdjustmentFixingDays: configItemDetails.interestAdjustmentFixingDays,
-            defaultFixingDate: configItemDetails.defaultFixingDate,
-            defaultFixingRate: configItemDetails.defaultFixingRate,
-            fixingTerm: configItemDetails.fixingTerm,
-            fixingUnits: configItemDetails.fixingUnits,
-            rateResetHolidayCalender: configItemDetails.rateResetHolidayCalender,
-            compoundingConvention: configItemDetails.compoundingConvention,
-            spreadConventionOrCompounding: configItemDetails.spreadConventionOrCompounding,
-            couponRateMinimum: configItemDetails.couponRateMinimum,
-            couponRateMaximum: configItemDetails.couponRateMaximum,
-            alternativeSecurityIdIdentificationSystem: configItemDetails.alternativeSecurityIdIdentificationSystem,
-            alternativeSecurityIdLongSecurityName: configItemDetails.alternativeSecurityIdLongSecurityName,
-            alternativeSecurityIdCusip: configItemDetails.alternativeSecurityIdCusip,
-            alternativeSecurityIdIsin: configItemDetails.alternativeSecurityIdIsin,
-            putCalls: configItemDetails.putCalls,
-            clientSpecificFields: configItemDetails.clientSpecificFields,
-            attachments: configItemDetails.attachments,
-            comments: configItemDetails.comments,
-            changedByUser: configItemDetails.changedByUser,
-            changedDate: configItemDetails.changedDate,
-            createdByUser: configItemDetails.createdByUser,
-            isDeleted: configItemDetails.isDeleted,
-            deletedBy: configItemDetails.deletedBy,
-            deleteReason: configItemDetails.deleteReason,
-            actionItemId: configItemDetails._id,
-            action: helper.sysConst.permissionAccessTypes.EDIT,
-            actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
-        }, {session: session});
-        await auditData.save();
+            await BondSecurityModel.updateOne({_id: id}, data).session(session);
 
-        callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
+            let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
+            configItemDetails = configItemDetails[0];
+
+            const auditData = new BondSecurityModel({
+                securityId: configItemDetails.securityId,
+                ISIN: configItemDetails.ISIN,
+                userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
+                name: configItemDetails.name,
+                securityCode: configItemDetails.securityCode,
+                currency: configItemDetails.currency,
+                paymentHolidayCalender: configItemDetails.paymentHolidayCalender,
+                exchange: configItemDetails.exchange,
+                quoted: configItemDetails.quoted,
+                minTradeVolume: configItemDetails.minTradeVolume,
+                volume: configItemDetails.volume,
+                issuer: configItemDetails.issuer,
+                issueDate: configItemDetails.issueDate,
+                issuePrice: configItemDetails.issuePrice,
+                redemptionPrice: configItemDetails.redemptionPrice,
+                redemptionCurrency: configItemDetails.redemptionCurrency,
+                interestType: configItemDetails.interestType,
+                couponRate: configItemDetails.couponRate,
+                maturityDate: configItemDetails.maturityDate,
+                structure: configItemDetails.structure,
+                firstRedemptionDate: configItemDetails.firstRedemptionDate,
+                couponTerm: configItemDetails.couponTerm,
+                couponTermUnit: configItemDetails.couponTermUnit,
+                redemptionTerm: configItemDetails.redemptionTerm,
+                redemptionTermUnit: configItemDetails.redemptionTermUnit,
+                inceptionRedemptionRate: configItemDetails.inceptionRedemptionRate,
+                currentPoolFactor: configItemDetails.currentPoolFactor,
+                firstCouponPaymentDate: configItemDetails.firstCouponPaymentDate,
+                quotation: configItemDetails.quotation,
+                settlementDays: configItemDetails.settlementDays,
+                quoteType: configItemDetails.quoteType,
+                quotingLotSize: configItemDetails.quotingLotSize,
+                quotingFaceValue: configItemDetails.quotingFaceValue,
+                couponConventionDayCount: configItemDetails.couponConventionDayCount,
+                couponConventionPaymentDayConvention: configItemDetails.couponConventionPaymentDayConvention,
+                couponConventionTreasuryTermCoupon: configItemDetails.couponConventionTreasuryTermCoupon,
+                couponConventionEndOfMonthConvention: configItemDetails.couponConventionEndOfMonthConvention,
+                couponConventionTreasuryTermCouponBase: configItemDetails.couponConventionTreasuryTermCouponBase,
+                couponConventionHolidayAdjustedCouponFlag: configItemDetails.couponConventionHolidayAdjustedCouponFlag,
+                couponConventionPaymentType: configItemDetails.couponConventionPaymentType,
+                couponConventionFixedRateDeCompounding: configItemDetails.couponConventionFixedRateDeCompounding,
+                couponConventionInclExclOneDay: configItemDetails.couponConventionInclExclOneDay,
+                couponConventionSequenceConvention: configItemDetails.couponConventionSequenceConvention,
+                oddCouponsAndRedempOddConvLastCoupon: configItemDetails.oddCouponsAndRedempOddConvLastCoupon,
+                oddCouponsAndRedempOddConvLastRedeption: configItemDetails.oddCouponsAndRedempOddConvLastRedeption,
+                sequenceConventionRedemption: configItemDetails.sequenceConventionRedemption,
+                couponConventionsDayCount: configItemDetails.couponConventionsDayCount,
+                accruedInterestConventionsInterestType: configItemDetails.accruedInterestConventionsInterestType,
+                accruedInterestConventionsTreasuryProduct: configItemDetails.accruedInterestConventionsTreasuryProduct,
+                accruedInterestConventionsDayCountConvention: configItemDetails.accruedInterestConventionsDayCountConvention,
+                accruedInterestConventionsCalculationMethod: configItemDetails.accruedInterestConventionsCalculationMethod,
+                floatingRatesReferenceRate: configItemDetails.floatingRatesReferenceRate,
+                floatingRatesSpreadRate: configItemDetails.floatingRatesSpreadRate,
+                interestLookBackPeriod: configItemDetails.interestLookBackPeriod,
+                interestMultiplierFactor: configItemDetails.interestMultiplierFactor,
+                interestAdjustmentFixingDays: configItemDetails.interestAdjustmentFixingDays,
+                defaultFixingDate: configItemDetails.defaultFixingDate,
+                defaultFixingRate: configItemDetails.defaultFixingRate,
+                fixingTerm: configItemDetails.fixingTerm,
+                fixingUnits: configItemDetails.fixingUnits,
+                rateResetHolidayCalender: configItemDetails.rateResetHolidayCalender,
+                compoundingConvention: configItemDetails.compoundingConvention,
+                spreadConventionOrCompounding: configItemDetails.spreadConventionOrCompounding,
+                couponRateMinimum: configItemDetails.couponRateMinimum,
+                couponRateMaximum: configItemDetails.couponRateMaximum,
+                alternativeSecurityIdIdentificationSystem: configItemDetails.alternativeSecurityIdIdentificationSystem,
+                alternativeSecurityIdLongSecurityName: configItemDetails.alternativeSecurityIdLongSecurityName,
+                alternativeSecurityIdCusip: configItemDetails.alternativeSecurityIdCusip,
+                alternativeSecurityIdIsin: configItemDetails.alternativeSecurityIdIsin,
+                putCalls: configItemDetails.putCalls,
+                clientSpecificFields: configItemDetails.clientSpecificFields,
+                attachments: configItemDetails.attachments,
+                comments: configItemDetails.comments,
+                changedByUser: configItemDetails.changedByUser,
+                changedDate: configItemDetails.changedDate,
+                createdByUser: configItemDetails.createdByUser,
+                isDeleted: configItemDetails.isDeleted,
+                deletedBy: configItemDetails.deletedBy,
+                deleteReason: configItemDetails.deleteReason,
+                actionItemId: configItemDetails._id,
+                action: helper.sysConst.permissionAccessTypes.EDIT,
+                actionDate: new Date(),
+                actionBy: configItemDetails.createdByUser,
+            }, {session: session});
+            await auditData.save();
+
+            callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
+        } catch (e) {
+            callback(e, null, 'Server Error!');
+        }
     }
 }
 
@@ -2746,6 +2782,23 @@ router.get("/get-demo-bulk-insert-file/csv", /*authUser, bondSecurityMiddleware.
  *  get:
  *      summary: Get all Bond
  *      tags: [Bond]
+ *      parameters:
+ *      - name: search
+ *        in: query
+ *        description: Search Key
+ *        default: Any
+ *      - name: searchKey
+ *        in: query
+ *        description: Need to mention if you try to search
+ *        default: securityId
+ *      - name: page
+ *        in: query
+ *        description: Current page number
+ *        default: 1
+ *      - name: perPage
+ *        in: query
+ *        description: Items per page
+ *        default: 5
  *      responses:
  *          200:
  *              description: Success
@@ -2758,11 +2811,11 @@ router.get("/get-all", authUser, bondSecurityMiddleware.canRead, async (req, res
             isDeleted: false,
         }
 
-/*        if (req.query.search !== undefined && req.query.search.length > 0) {
-            filter.costBasisProfileName = {
-                $regex: '/^' + req.query.search + '/i',
-            }
-        }*/
+        /*        if (req.query.search !== undefined && req.query.search.length > 0) {
+                    filter.costBasisProfileName = {
+                        $regex: '/^' + req.query.search + '/i',
+                    }
+                }*/
 
         let assets = await BondSecurityModel.find(filter)
             .populate([
@@ -3001,20 +3054,20 @@ router.delete("/bulk/delete", authUser, bondSecurityMiddleware.canDelete, async 
     let session = await mongo.startSession();
 
     try {
-        if(Array.isArray(req.query.ids) && req.query.ids.length > 0){
+        if (Array.isArray(req.query.ids) && req.query.ids.length > 0) {
             let total = req.query.ids.length;
             let items = 0;
 
-            for(let id in req.query.ids){
+            for (let id in req.query.ids) {
 
-                if(!helper.isValidObjectId()){
+                if (!helper.isValidObjectId()) {
                     logger.error(`Bulk Delete Bond Security with id => ${id} is and Invalid id!`);
-                }else{
+                } else {
                     let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false});
 
                     if (configItemDetails.length === 0) {
                         logger.error(`Bond Security with id => ${id} not found or deleted!`);
-                    }else{
+                    } else {
                         await session.startTransaction();
 
                         await BondSecurityModel.updateOne({_id: id, isDeleted: false}, {
@@ -3120,7 +3173,7 @@ router.delete("/bulk/delete", authUser, bondSecurityMiddleware.canDelete, async 
             }
 
             br.sendSuccess(res, {}, total == items ? 'All items deleted!' : 'Some of the items deleted kindly refresh the list to verify the deleted items!');
-        }else{
+        } else {
             br.sendNotSuccessful(res, 'Nothing to delete! Please specify ids to delete items!');
         }
     } catch (error) {
