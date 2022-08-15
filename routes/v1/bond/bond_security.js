@@ -368,13 +368,13 @@ let bondDataValidator = {
                 };
 
                 if (!helper.isValidObjectId(data.floatingRatesReferenceRate)) {
-                    return callback({}, null, 'floatingRatesReferenceRate is not a valid Security Group Id!');
+                    return callback({}, null, 'floatingRatesReferenceRate is not a valid Reference Rate Id!');
                 } else {
                     const itemDetails = await ReferenceRateModel
                         .find({_id: data.floatingRatesReferenceRate, isDeleted: false,});
 
                     if (itemDetails.length === 0) {
-                        return callback({}, null, 'Invalid Security Group Id for floatingRatesReferenceRate => ' + data.floatingRatesReferenceRate + '!');
+                        return callback({}, null, 'Invalid Reference Rate Id for floatingRatesReferenceRate => ' + data.floatingRatesReferenceRate + '!');
                     }
                 }
 
@@ -402,6 +402,10 @@ let bondDataValidator = {
 
                 if (data.fixingTerm !== undefined && isNaN(Number(data.fixingTerm))) {
                     return callback({}, null, 'fixingTerm should have a valid numeric value!');
+                }
+
+                if (data.fixingUnits !== undefined && !helper.isObjectContainsKey(helper.sysConst.acPeriodUnit, data.fixingUnits)) {
+                    return callback({}, null, 'Invalid Data in fixingUnits!');
                 }
 
                 if (!helper.isValidObjectId(data.rateResetHolidayCalender)) {
@@ -579,7 +583,7 @@ let bondDataValidator = {
 };
 
 let bondDataUpdate = {
-    createBond: async (req, data, session, callback) => {
+    createBond: async (req, data, session, needToCommit, callback) => {
         try {
 
             const configFind = await BondSecurityModel.find({
@@ -733,13 +737,16 @@ let bondDataUpdate = {
             }, {session: session});
             await auditData.save();
 
+            if(needToCommit){
+                await session.commitTransaction();
+            }
             callback(null, ib, 'Bond Security General Info added successfully!');
         } catch (e) {
             await session.abortTransaction();
             callback(e, null, 'Server Error!');
         }
     },
-    updateBondGeneral: async (req, data, session, callback) => {
+    updateBondGeneral: async (req, data, session, needToCommit, callback) => {
         try {
             let id = req.validParamId;
 
@@ -789,7 +796,7 @@ let bondDataUpdate = {
             let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
             configItemDetails = configItemDetails[0];
 
-            const auditData = new BondSecurityModel({
+            const auditData = new BondSecurityAuditModel({
                 securityId: configItemDetails.securityId,
                 ISIN: configItemDetails.ISIN,
                 userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
@@ -882,13 +889,14 @@ let bondDataUpdate = {
             callback(e, null, 'Server Error!');
         }
     },
-    updateMarketConvention: async (req, data, session, callback) => {
+    updateMarketConvention: async (req, data, session, needToCommit, callback) => {
         try {
             let id = req.validParamId;
 
             let configItem = await BondSecurityModel.find({_id: id, isDeleted: false});
 
             if (configItem.length === 0) {
+                await session.abortTransaction();
                 return callback({notFound: true}, null, `Bond Security with id => ${id} not found or deleted!`);
             }
 
@@ -900,7 +908,7 @@ let bondDataUpdate = {
             let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
             configItemDetails = configItemDetails[0];
 
-            const auditData = new BondSecurityModel({
+            const auditData = new BondSecurityAuditModel({
                 securityId: configItemDetails.securityId,
                 ISIN: configItemDetails.ISIN,
                 userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
@@ -987,13 +995,17 @@ let bondDataUpdate = {
             }, {session: session});
             await auditData.save();
 
+            if(needToCommit){
+                await session.commitTransaction();
+            }
             callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
         } catch (e) {
+            console.log('in catch section => trying to abort session!', e);
             await session.abortTransaction();
-            callback(e, null, 'Server Error!');
+            callback(e, null, e.message);
         }
     },
-    updateReferenceRate: async (req, data, session, callback) => {
+    updateReferenceRate: async (req, data, session, needToCommit, callback) => {
         try {
             let id = req.validParamId;
 
@@ -1011,7 +1023,7 @@ let bondDataUpdate = {
             let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
             configItemDetails = configItemDetails[0];
 
-            const auditData = new BondSecurityModel({
+            const auditData = new BondSecurityAuditModel({
                 securityId: configItemDetails.securityId,
                 ISIN: configItemDetails.ISIN,
                 userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
@@ -1098,13 +1110,16 @@ let bondDataUpdate = {
             }, {session: session});
             await auditData.save();
 
-            callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
+            if(needToCommit){
+                await session.commitTransaction();
+            }
+            callback(null, {}, 'Bond Reference rate Info updated successfully!');
         } catch (e) {
             await session.abortTransaction();
             callback(e, null, 'Server Error!');
         }
     },
-    updateAlternativeSecurityId: async (req, data, session, callback) => {
+    updateAlternativeSecurityId: async (req, data, session, needToCommit, callback) => {
         try {
             let id = req.validParamId;
 
@@ -1122,7 +1137,7 @@ let bondDataUpdate = {
             let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
             configItemDetails = configItemDetails[0];
 
-            const auditData = new BondSecurityModel({
+            const auditData = new BondSecurityAuditModel({
                 securityId: configItemDetails.securityId,
                 ISIN: configItemDetails.ISIN,
                 userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
@@ -1209,13 +1224,16 @@ let bondDataUpdate = {
             }, {session: session});
             await auditData.save();
 
-            callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
+            if(needToCommit){
+                await session.commitTransaction();
+            }
+            callback(null, {}, 'Bond Alternative Security Info updated successfully!');
         } catch (e) {
             await session.abortTransaction();
             callback(e, null, 'Server Error!');
         }
     },
-    updatePutCall: async (req, data, session, callback) => {
+    updatePutCall: async (req, data, session, needToCommit, callback) => {
         try {
             let id = req.validParamId;
 
@@ -1233,7 +1251,7 @@ let bondDataUpdate = {
             let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
             configItemDetails = configItemDetails[0];
 
-            const auditData = new BondSecurityModel({
+            const auditData = new BondSecurityAuditModel({
                 securityId: configItemDetails.securityId,
                 ISIN: configItemDetails.ISIN,
                 userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
@@ -1320,13 +1338,16 @@ let bondDataUpdate = {
             }, {session: session});
             await auditData.save();
 
-            callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
+            if(needToCommit){
+                await session.commitTransaction();
+            }
+            callback(null, {}, 'Bond Put Call Info updated successfully!');
         } catch (e) {
             await session.abortTransaction();
             callback(e, null, 'Server Error!');
         }
     },
-    updateClientSpecificFields: async (req, data, session, callback) => {
+    updateClientSpecificFields: async (req, data, session, needToCommit, callback) => {
         try {
             let id = req.validParamId;
 
@@ -1344,7 +1365,7 @@ let bondDataUpdate = {
             let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
             configItemDetails = configItemDetails[0];
 
-            const auditData = new BondSecurityModel({
+            const auditData = new BondSecurityAuditModel({
                 securityId: configItemDetails.securityId,
                 ISIN: configItemDetails.ISIN,
                 userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
@@ -1431,13 +1452,16 @@ let bondDataUpdate = {
             }, {session: session});
             await auditData.save();
 
-            callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
+            if(needToCommit){
+                await session.commitTransaction();
+            }
+            callback(null, {}, 'Bond Client Specific Fields updated successfully!');
         } catch (e) {
             await session.abortTransaction();
             callback(e, null, 'Server Error!');
         }
     },
-    updateCommentsAndAttachments: async (req, data, session, callback) => {
+    updateCommentsAndAttachments: async (req, data, session, needToCommit, callback) => {
         try {
             let id = req.validParamId;
 
@@ -1458,7 +1482,7 @@ let bondDataUpdate = {
             let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
             configItemDetails = configItemDetails[0];
 
-            const auditData = new BondSecurityModel({
+            const auditData = new BondSecurityAuditModel({
                 securityId: configItemDetails.securityId,
                 ISIN: configItemDetails.ISIN,
                 userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
@@ -1545,13 +1569,16 @@ let bondDataUpdate = {
             }, {session: session});
             await auditData.save();
 
-            callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
+            if(needToCommit){
+                await session.commitTransaction();
+            }
+            callback(null, {}, 'Bond Comments And Attachments updated successfully!');
         } catch (e) {
             await session.abortTransaction();
             callback(e, null, 'Server Error!');
         }
     },
-    removeAttachments: async (req, data, session, callback) => {
+    removeAttachments: async (req, data, session, needToCommit, callback) => {
         try {
             let id = req.validParamId;
 
@@ -1580,7 +1607,7 @@ let bondDataUpdate = {
             let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
             configItemDetails = configItemDetails[0];
 
-            const auditData = new BondSecurityModel({
+            const auditData = new BondSecurityAuditModel({
                 securityId: configItemDetails.securityId,
                 ISIN: configItemDetails.ISIN,
                 userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
@@ -1667,7 +1694,10 @@ let bondDataUpdate = {
             }, {session: session});
             await auditData.save();
 
-            callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
+            if(needToCommit){
+                await session.commitTransaction();
+            }
+            callback(null, {}, 'Bond Attachment removed successfully!');
         } catch (e) {
             await session.abortTransaction();
             callback(e, null, 'Server Error!');
@@ -1684,7 +1714,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
             let session = await mongo.startSession();
             session.startTransaction();
 
-            await bondDataUpdate.createBond(data, session, (err, data, msg) => {
+            await bondDataUpdate.createBond(req, data, session, false, (err, data, msg) => {
                 if (err) {
                     return callback(counter, false, msg);
                 } else {
@@ -1698,19 +1728,19 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                             return callback(counter, false, msg);
                         } else {
 
-                            await bondDataUpdate.updateMarketConvention(req, data, session, (err, data, msg) => {
+                            await bondDataUpdate.updateMarketConvention(req, data, session, false, (err, data, msg) => {
                                 if (err) {
                                     callback(counter, false, msg);
                                 } else {
 
                                     // insert reference rates info
-                                    bondDataValidator.referenceRateValidator(req.body, async (err, data, msg) => {
+                                    bondDataValidator.referenceRateValidator(req.body,async (err, data, msg) => {
                                         if (err) {
                                             await session.abortTransaction();
                                             return callback(counter, false, msg);
                                         } else {
 
-                                            await bondDataUpdate.updateReferenceRate(req, data, session, (err, data, msg) => {
+                                            await bondDataUpdate.updateReferenceRate(req, data, session, false, (err, data, msg) => {
                                                 if (err) {
                                                     return callback(counter, false, msg);
                                                 } else {
@@ -1723,7 +1753,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                                                             return callback(counter, false, msg);
                                                         } else {
 
-                                                            await bondDataUpdate.updateAlternativeSecurityId(req, data, session, (err, data, msg) => {
+                                                            await bondDataUpdate.updateAlternativeSecurityId(req, data, session, false,(err, data, msg) => {
                                                                 if (err) {
                                                                     return callback(counter, false, msg);
                                                                 } else {
@@ -1736,7 +1766,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                                                                             return callback(counter, false, msg);
                                                                         } else {
 
-                                                                            await bondDataUpdate.updatePutCall(req, data, session, (err, data, msg) => {
+                                                                            await bondDataUpdate.updatePutCall(req, data, session, false, (err, data, msg) => {
                                                                                 if (err) {
                                                                                     return callback(counter, false, msg);
                                                                                 } else {
@@ -1748,7 +1778,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                                                                                             await session.abortTransaction();
                                                                                             return callback(counter, false, msg);
                                                                                         } else {
-                                                                                            await bondDataUpdate.updateClientSpecificFields(req, data, session, (err, data, msg) => {
+                                                                                            await bondDataUpdate.updateClientSpecificFields(req, data, session, false,(err, data, msg) => {
                                                                                                 if (err) {
                                                                                                     return callback(counter, false, msg);
                                                                                                 } else {
@@ -1761,14 +1791,11 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                                                                                                             return callback(counter, false, msg);
                                                                                                         } else {
 
-                                                                                                            await bondDataUpdate.updateCommentsAndAttachments(req, data, session, (err, data, msg) => {
+                                                                                                            await bondDataUpdate.updateCommentsAndAttachments(req, data, session, true,(err, data, msg) => {
                                                                                                                 if (err) {
-                                                                                                                    return callback(counter, false, msg);
-
+                                                                                                                    callback(counter, false, msg);
                                                                                                                 } else {
-                                                                                                                    session.commitTransaction(()=>{
-                                                                                                                        callback(counter, true, 'Bond Details Inserted successfully!');
-                                                                                                                    });
+                                                                                                                    callback(counter, true, 'Bond Details Inserted successfully!');
                                                                                                                 }
                                                                                                             }).catch((err) => {
                                                                                                                 onError(counter, err);
@@ -1944,20 +1971,13 @@ router.post("/add/general", authUser, bondSecurityMiddleware.canCreate, (req, re
             let session = await mongo.startSession();
             session.startTransaction();
 
-            await bondDataUpdate.createBond(req, data, session, (err, data, msg) => {
+            await bondDataUpdate.createBond(req, data, session, true,(err, data, msg) => {
                 if (err) {
-                    if(session.inTransaction()){
-                        session.abortTransaction();
-                    }
                     br.sendNotSuccessful(res, msg, err);
                 } else {
-                    session.commitTransaction();
                     br.sendSuccess(res, data, msg);
                 }
             }).catch((err) => {
-                if(session.inTransaction()){
-                    session.abortTransaction();
-                }
                 br.sendServerError(res, err);
             }).finally(() => {
                 session.endSession();
@@ -2082,20 +2102,13 @@ router.put("/update/general/:id", authUser, bondSecurityMiddleware.canUpdate, is
             let session = await mongo.startSession();
             session.startTransaction();
 
-            await bondDataUpdate.updateBondGeneral(req, data, session, (err, data, msg) => {
+            await bondDataUpdate.updateBondGeneral(req, data, session, true,(err, data, msg) => {
                 if (err) {
-                    if(session.inTransaction()){
-                        session.abortTransaction();
-                    }
                     br.sendNotSuccessful(res, msg, err);
                 } else {
-                    session.commitTransaction();
                     br.sendSuccess(res, data, msg);
                 }
             }).catch((err) => {
-                if(session.inTransaction()){
-                    session.abortTransaction();
-                }
                 br.sendServerError(res, err);
             }).finally(() => {
                 session.endSession();
@@ -2205,13 +2218,11 @@ router.put("/update/market-conversion/:id", authUser, bondSecurityMiddleware.can
             let session = await mongo.startSession();
             session.startTransaction();
 
-            await bondDataUpdate.updateMarketConvention(req, data, session, (err, data, msg) => {
+            await bondDataUpdate.updateMarketConvention(req, data, session, true, (err, data, msg) => {
                 if (err) {
                     br.sendNotSuccessful(res, msg, err);
                 } else {
-                    session.commitTransaction(()=>{
-                        br.sendSuccess(res, data, msg);
-                    });
+                    br.sendSuccess(res, data, msg);
                 }
             }).catch((err) => {
                 br.sendServerError(res, err);
@@ -2240,75 +2251,48 @@ router.put("/update/market-conversion/:id", authUser, bondSecurityMiddleware.can
  *                  schema:
  *                      type: object
  *                      properties:
- *                          quotation:
+ *                          floatingRatesReferenceRate:
  *                              type: string
  *                              default: 6287f9cc5f9120bbbbc36f59
- *                          settlementDays:
+ *                          floatingRatesSpreadRate:
  *                              type: number
- *                              default: 67
- *                          quoteType:
+ *                              default: 67.41
+ *                          interestLookBackPeriod:
  *                              type: number
  *                              default: 1
- *                          quotingLotSize:
+ *                          interestMultiplierFactor:
  *                              type: number
  *                              default: 3
- *                          quotingFaceValue:
+ *                          interestAdjustmentFixingDays:
+ *                              type: boolean
+ *                              default: false
+ *                          defaultFixingDate:
  *                              type: string
- *                              default: 7
- *                          couponConventionDayCount:
+ *                              default: 2020-02-01
+ *                          defaultFixingRate:
  *                              type: number
- *                              default: 2
- *                          couponConventionPaymentDayConvention:
+ *                              default: 20.3
+ *                          fixingTerm:
+ *                              type: number
+ *                              default: 3
+ *                          fixingUnits:
  *                              type: string
- *                              default: 2022-02-01
- *                          couponConventionTreasuryTermCoupon:
- *                              type: boolean
- *                              default: true
- *                          couponConventionEndOfMonthConvention:
+ *                              default: Day
+ *                          rateResetHolidayCalender:
  *                              type: string
- *                              default: 2022-02-01
- *                          couponConventionTreasuryTermCouponBase:
- *                              type: boolean
- *                              default: true
- *                          couponConventionHolidayAdjustedCouponFlag:
- *                              type: boolean
- *                              default: true
- *                          couponConventionPaymentType:
+ *                              default: 62d386b9f1481cef3650a40f
+ *                          compoundingConvention:
  *                              type: string
- *                              default: Type
- *                          couponConventionFixedRateDeCompounding:
- *                              type: boolean
- *                              default: true
- *                          couponConventionInclExclOneDay:
- *                              type: boolean
- *                              default: true
- *                          couponConventionSequenceConvention:
+ *                              default: Compound
+ *                          spreadConventionOrCompounding:
  *                              type: string
- *                              default: any string
- *                          oddCouponsAndRedempOddConvLastCoupon:
- *                              type: string
- *                              default: Regular
- *                          oddCouponsAndRedempOddConvLastRedeption:
- *                              type: string
- *                              default: Irregular
- *                          sequenceConventionRedemption:
- *                              type: string
- *                              default: DWE
- *                          couponConventionsDayCount:
- *                              type: string
- *                              default: VFSD
- *                          accruedInterestConventionsInterestType:
- *                              type: boolean
- *                              default: true
- *                          accruedInterestConventionsTreasuryProduct:
- *                              type: boolean
- *                              default: true
- *                          accruedInterestConventionsDayCountConvention:
- *                              type: string
- *                              default: HD2
- *                          accruedInterestConventionsCalculationMethod:
- *                              type: string
- *                              default: SCE2
+ *                              default: Compound and Add
+ *                          couponRateMinimum:
+ *                              type: number
+ *                              default: 25
+ *                          couponRateMaximum:
+ *                              type: number
+ *                              default: 55
  *      responses:
  *          200:
  *              description: Success
@@ -2323,17 +2307,14 @@ router.put("/update/reference-rate/:id", authUser, bondSecurityMiddleware.canUpd
             let session = await mongo.startSession();
             session.startTransaction();
 
-            await bondDataUpdate.updateReferenceRate(req, data, session, (err, data, msg) => {
+            await bondDataUpdate.updateReferenceRate(req, data, session, true,(err, data, msg) => {
                 if (err) {
-                    session.abortTransaction();
                     br.sendNotSuccessful(res, msg, err);
                 } else {
-                    session.commitTransaction();
                     br.sendSuccess(res, data, msg);
                 }
             }).catch((err) => {
                 br.sendServerError(res, err);
-                session.abortTransaction();
             }).finally(() => {
                 session.endSession();
             });
@@ -2385,17 +2366,14 @@ router.put("/update/alternative-security-id/:id", authUser, bondSecurityMiddlewa
             let session = await mongo.startSession();
             session.startTransaction();
 
-            await bondDataUpdate.updateAlternativeSecurityId(req, data, session, (err, data, msg) => {
+            await bondDataUpdate.updateAlternativeSecurityId(req, data, session, true,(err, data, msg) => {
                 if (err) {
-                    session.abortTransaction();
                     br.sendNotSuccessful(res, msg, err);
                 } else {
-                    session.commitTransaction();
                     br.sendSuccess(res, data, msg);
                 }
             }).catch((err) => {
                 br.sendServerError(res, err);
-                session.abortTransaction();
             }).finally(() => {
                 session.endSession();
             });
@@ -2455,12 +2433,10 @@ router.put("/update/put-calls/:id", authUser, bondSecurityMiddleware.canUpdate, 
             let session = await mongo.startSession();
             session.startTransaction();
 
-            await bondDataUpdate.updatePutCall(req, data, session, (err, data, msg) => {
+            await bondDataUpdate.updatePutCall(req, data, session, true,(err, data, msg) => {
                 if (err) {
-                    session.abortTransaction();
                     br.sendNotSuccessful(res, msg, err);
                 } else {
-                    session.commitTransaction();
                     br.sendSuccess(res, data, msg);
                 }
             }).catch((err) => {
@@ -2516,16 +2492,13 @@ router.put("/update/client-specific-fields/:id", authUser, bondSecurityMiddlewar
             let session = await mongo.startSession();
             session.startTransaction();
 
-            await bondDataUpdate.updateClientSpecificFields(req, data, session, (err, data, msg) => {
+            await bondDataUpdate.updateClientSpecificFields(req, data, session, true,(err, data, msg) => {
                 if (err) {
-                    session.abortTransaction();
                     br.sendNotSuccessful(res, msg, err);
                 } else {
-                    session.commitTransaction();
                     br.sendSuccess(res, data, msg);
                 }
             }).catch((err) => {
-                br.sendServerError(res, err);
                 session.abortTransaction();
             }).finally(() => {
                 session.endSession();
@@ -2583,17 +2556,14 @@ router.put("/update/comments-and-attachments/:id", authUser, bondSecurityMiddlew
             let session = await mongo.startSession();
             session.startTransaction();
 
-            await bondDataUpdate.updateCommentsAndAttachments(req, data, session, (err, data, msg) => {
+            await bondDataUpdate.updateCommentsAndAttachments(req, data, session, true,(err, data, msg) => {
                 if (err) {
-                    session.abortTransaction();
                     br.sendNotSuccessful(res, msg, err);
                 } else {
-                    session.commitTransaction();
                     br.sendSuccess(res, data, msg);
                 }
             }).catch((err) => {
                 br.sendServerError(res, err);
-                session.abortTransaction();
             }).finally(() => {
                 session.endSession();
             });
@@ -2636,17 +2606,14 @@ router.put("/update/attachments/remove/:id", authUser, bondSecurityMiddleware.ca
             let session = await mongo.startSession();
             session.startTransaction();
 
-            await bondDataUpdate.removeAttachments(req, data, session, (err, data, msg) => {
+            await bondDataUpdate.removeAttachments(req, data, session, true,(err, data, msg) => {
                 if (err) {
-                    session.abortTransaction();
                     br.sendNotSuccessful(res, msg, err);
                 } else {
-                    session.commitTransaction();
                     br.sendSuccess(res, data, msg);
                 }
             }).catch((err) => {
                 br.sendServerError(res, err);
-                session.abortTransaction();
             }).finally(() => {
                 session.endSession();
             });
