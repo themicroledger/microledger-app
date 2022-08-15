@@ -92,7 +92,7 @@ let bondDataValidator = {
                 };
 
                 if ((await BondSecurityModel.find({userDefinedSecurityId: data.userDefinedSecurityId})).length > 0) {
-                    return callback({}, null, `Bond Secuurity is present with userDefinedSecurityId: ${data.userDefinedSecurityId}!`);
+                    return callback({}, null, `Bond Security is present with userDefinedSecurityId: ${data.userDefinedSecurityId}!`);
                 }
 
                 if (!helper.isValidObjectId(data.securityCode)) {
@@ -735,6 +735,7 @@ let bondDataUpdate = {
 
             callback(null, ib, 'Bond Security General Info added successfully!');
         } catch (e) {
+            await session.abortTransaction();
             callback(e, null, 'Server Error!');
         }
     },
@@ -877,6 +878,7 @@ let bondDataUpdate = {
 
             callback(null, {}, 'Bond Security General Info updated successfully!');
         } catch (e) {
+            await session.abortTransaction();
             callback(e, null, 'Server Error!');
         }
     },
@@ -987,6 +989,7 @@ let bondDataUpdate = {
 
             callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
         } catch (e) {
+            await session.abortTransaction();
             callback(e, null, 'Server Error!');
         }
     },
@@ -1097,6 +1100,7 @@ let bondDataUpdate = {
 
             callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
         } catch (e) {
+            await session.abortTransaction();
             callback(e, null, 'Server Error!');
         }
     },
@@ -1207,6 +1211,7 @@ let bondDataUpdate = {
 
             callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
         } catch (e) {
+            await session.abortTransaction();
             callback(e, null, 'Server Error!');
         }
     },
@@ -1317,6 +1322,7 @@ let bondDataUpdate = {
 
             callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
         } catch (e) {
+            await session.abortTransaction();
             callback(e, null, 'Server Error!');
         }
     },
@@ -1427,6 +1433,7 @@ let bondDataUpdate = {
 
             callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
         } catch (e) {
+            await session.abortTransaction();
             callback(e, null, 'Server Error!');
         }
     },
@@ -1540,6 +1547,7 @@ let bondDataUpdate = {
 
             callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
         } catch (e) {
+            await session.abortTransaction();
             callback(e, null, 'Server Error!');
         }
     },
@@ -1661,6 +1669,7 @@ let bondDataUpdate = {
 
             callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
         } catch (e) {
+            await session.abortTransaction();
             callback(e, null, 'Server Error!');
         }
     }
@@ -1677,7 +1686,6 @@ function insertData(req, inputData, counter = 0, callback, onError) {
 
             await bondDataUpdate.createBond(data, session, (err, data, msg) => {
                 if (err) {
-                    session.abortTransaction();
                     return callback(counter, false, msg);
                 } else {
 
@@ -1692,7 +1700,6 @@ function insertData(req, inputData, counter = 0, callback, onError) {
 
                             await bondDataUpdate.updateMarketConvention(req, data, session, (err, data, msg) => {
                                 if (err) {
-                                    session.abortTransaction();
                                     callback(counter, false, msg);
                                 } else {
 
@@ -1705,7 +1712,6 @@ function insertData(req, inputData, counter = 0, callback, onError) {
 
                                             await bondDataUpdate.updateReferenceRate(req, data, session, (err, data, msg) => {
                                                 if (err) {
-                                                    session.abortTransaction();
                                                     return callback(counter, false, msg);
                                                 } else {
 
@@ -1719,7 +1725,6 @@ function insertData(req, inputData, counter = 0, callback, onError) {
 
                                                             await bondDataUpdate.updateAlternativeSecurityId(req, data, session, (err, data, msg) => {
                                                                 if (err) {
-                                                                    session.abortTransaction();
                                                                     return callback(counter, false, msg);
                                                                 } else {
 
@@ -1733,7 +1738,6 @@ function insertData(req, inputData, counter = 0, callback, onError) {
 
                                                                             await bondDataUpdate.updatePutCall(req, data, session, (err, data, msg) => {
                                                                                 if (err) {
-                                                                                    session.abortTransaction();
                                                                                     return callback(counter, false, msg);
                                                                                 } else {
 
@@ -1746,7 +1750,6 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                                                                                         } else {
                                                                                             await bondDataUpdate.updateClientSpecificFields(req, data, session, (err, data, msg) => {
                                                                                                 if (err) {
-                                                                                                    session.abortTransaction();
                                                                                                     return callback(counter, false, msg);
                                                                                                 } else {
 
@@ -1760,16 +1763,15 @@ function insertData(req, inputData, counter = 0, callback, onError) {
 
                                                                                                             await bondDataUpdate.updateCommentsAndAttachments(req, data, session, (err, data, msg) => {
                                                                                                                 if (err) {
-                                                                                                                    session.abortTransaction();
                                                                                                                     return callback(counter, false, msg);
 
                                                                                                                 } else {
-                                                                                                                    session.commitTransaction();
-                                                                                                                    callback(counter, true, 'Bond Details Inserted successfully!');
+                                                                                                                    session.commitTransaction(()=>{
+                                                                                                                        callback(counter, true, 'Bond Details Inserted successfully!');
+                                                                                                                    });
                                                                                                                 }
                                                                                                             }).catch((err) => {
                                                                                                                 onError(counter, err);
-                                                                                                                session.abortTransaction();
                                                                                                             }).finally(() => {
                                                                                                                 session.endSession();
                                                                                                             });
@@ -1779,7 +1781,6 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                                                                                                 }
                                                                                             }).catch((err) => {
                                                                                                 onError(counter, err);
-                                                                                                session.abortTransaction();
                                                                                             }).finally(() => {
                                                                                                 session.endSession();
                                                                                             });
@@ -1789,7 +1790,6 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                                                                                 }
                                                                             }).catch((err) => {
                                                                                 onError(counter, err);
-                                                                                session.abortTransaction();
                                                                             }).finally(() => {
                                                                                 session.endSession();
                                                                             });
@@ -1799,7 +1799,6 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                                                                 }
                                                             }).catch((err) => {
                                                                 onError(counter, err);
-                                                                session.abortTransaction();
                                                             }).finally(() => {
                                                                 session.endSession();
                                                             });
@@ -1809,7 +1808,6 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                                                 }
                                             }).catch((err) => {
                                                 onError(counter, err);
-                                                session.abortTransaction();
                                             }).finally(() => {
                                                 session.endSession();
                                             });
@@ -1819,7 +1817,6 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                                 }
                             }).catch((err) => {
                                 onError(counter, err);
-                                session.abortTransaction();
                             }).finally(() => {
                                 session.endSession();
                             });
@@ -1829,7 +1826,6 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                 }
             }).catch((err) => {
                 onError(counter, err);
-                session.abortTransaction();
             }).finally(() => {
                 session.endSession();
             });
@@ -1950,15 +1946,19 @@ router.post("/add/general", authUser, bondSecurityMiddleware.canCreate, (req, re
 
             await bondDataUpdate.createBond(req, data, session, (err, data, msg) => {
                 if (err) {
-                    session.abortTransaction();
+                    if(session.inTransaction()){
+                        session.abortTransaction();
+                    }
                     br.sendNotSuccessful(res, msg, err);
                 } else {
                     session.commitTransaction();
                     br.sendSuccess(res, data, msg);
                 }
             }).catch((err) => {
+                if(session.inTransaction()){
+                    session.abortTransaction();
+                }
                 br.sendServerError(res, err);
-                session.abortTransaction();
             }).finally(() => {
                 session.endSession();
             });
@@ -2084,15 +2084,19 @@ router.put("/update/general/:id", authUser, bondSecurityMiddleware.canUpdate, is
 
             await bondDataUpdate.updateBondGeneral(req, data, session, (err, data, msg) => {
                 if (err) {
-                    session.abortTransaction();
+                    if(session.inTransaction()){
+                        session.abortTransaction();
+                    }
                     br.sendNotSuccessful(res, msg, err);
                 } else {
                     session.commitTransaction();
                     br.sendSuccess(res, data, msg);
                 }
             }).catch((err) => {
+                if(session.inTransaction()){
+                    session.abortTransaction();
+                }
                 br.sendServerError(res, err);
-                session.abortTransaction();
             }).finally(() => {
                 session.endSession();
             });
@@ -2203,15 +2207,14 @@ router.put("/update/market-conversion/:id", authUser, bondSecurityMiddleware.can
 
             await bondDataUpdate.updateMarketConvention(req, data, session, (err, data, msg) => {
                 if (err) {
-                    session.abortTransaction();
                     br.sendNotSuccessful(res, msg, err);
                 } else {
-                    session.commitTransaction();
-                    br.sendSuccess(res, data, msg);
+                    session.commitTransaction(()=>{
+                        br.sendSuccess(res, data, msg);
+                    });
                 }
             }).catch((err) => {
                 br.sendServerError(res, err);
-                session.abortTransaction();
             }).finally(() => {
                 session.endSession();
             });

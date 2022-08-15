@@ -13,8 +13,7 @@ const configLedgerLookupAuditSchema = new mongoose.Schema({
     },
     userDefinedSecurityId : {
         type: String,
-        required: true,
-        unique: true
+        required: true
     },
     name : {
         type: String,
