@@ -2786,20 +2786,44 @@ router.get("/get-all", authUser, bondSecurityMiddleware.canRead, async (req, res
                         $regex: '/^' + req.query.search + '/i',
                     }
                 }*/
+        let result = {
+            total: 0,
+            perPage: 5,
+            from: 0,
+            to: 0,
+            lastPage: null,
+            nextPage: null,
+            currentPage: 1,
+            data: []
+        };
 
-        let assets = await BondSecurityModel.find(filter)
-            .populate([
-                'securityCode',
-                'currency',
-                'paymentHolidayCalender',
-                'exchange',
-                'quoted',
-                'issuer',
-                'redemptionCurrency',
-                'interestType',
-                'structure'
-            ]);
-        br.sendSuccess(res, assets);
+        if(parseInt(req.query.perPage) > 0){
+            result.perPage = parseInt(req.query.perPage);
+        }
+
+        if(parseInt(req.query.page) > 0){
+            result.currentPage = parseInt(req.query.page);
+        }
+
+        result.total = await BondSecurityModel.find(filter).count();
+        if(result.total >= (result.currentPage * result.perPage)){
+            result.data = await BondSecurityModel.find(filter)
+                .skip((result.currentPage - 1) * result.perPage )
+                .limit(result.perPage)
+                .populate([
+                    'securityCode',
+                    'currency',
+                    'paymentHolidayCalender',
+                    'exchange',
+                    'quoted',
+                    'issuer',
+                    'redemptionCurrency',
+                    'interestType',
+                    'structure'
+                ]);
+        }
+
+        br.sendSuccess(res, result);
     } catch (error) {
         logger.error(error);
         br.sendServerError(res, {});

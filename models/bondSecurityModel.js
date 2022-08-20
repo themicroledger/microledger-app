@@ -317,4 +317,4 @@ const configLedgerLookupSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-module.exports = mongoose.model("bond_securities", configLedgerLookupSchema);
+module.exports = mongoose.model(" ", configLedgerLookupSchema);
