@@ -2845,9 +2845,14 @@ router.get("/get-all", authUser, bondSecurityMiddleware.canRead, async (req, res
         }
 
         result.total = await BondSecurityModel.find(filter).count();
+        let lp = Math.ceil(result.total / result.perPage);
+        let offset = (result.currentPage - 1) * result.perPage;
+        result.lastPage = lp > 1 ? lp : null;
+        result.nextPage = result.total > (result.perPage * result.currentPage ) ? result.currentPage + 1 : null;
+
         if (result.total <= (result.currentPage * result.perPage)) {
             result.data = await BondSecurityModel.find(filter)
-                .skip((result.currentPage - 1) * result.perPage)
+                .skip(offset)
                 .limit(result.perPage)
                 .populate([
                     'securityCode',
@@ -2861,6 +2866,9 @@ router.get("/get-all", authUser, bondSecurityMiddleware.canRead, async (req, res
                     'structure'
                 ]);
         }
+
+        result.from = offset + 1;
+        result.to = offset + result.data.length;
 
         br.sendSuccess(res, result);
     } catch (error) {
