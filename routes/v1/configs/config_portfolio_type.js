@@ -250,7 +250,7 @@ router.put("/update/:id", authUser, portfolioTypeMiddleware.canUpdate, isValidPa
                     actionItemId: ptDetails._id,
                     action: helper.sysConst.permissionAccessTypes.EDIT,
                     actionDate: new Date(),
-                    actionBy: ptDetails.createdByUser,
+                    actionBy: req.appCurrentUserData._id,
                 }, {session: session});
                 await auditData.save();
 
@@ -425,7 +425,7 @@ router.delete("/delete/:id", authUser, portfolioTypeMiddleware.canDelete, isVali
             actionItemId: portfolioTypeDetails._id,
             action: helper.sysConst.permissionAccessTypes.DELETE,
             actionDate: new Date(),
-            actionBy: portfolioTypeDetails.createdByUser,
+            actionBy: req.appCurrentUserData._id,
         }, {session: session});
         await auditData.save();
 

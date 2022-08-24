@@ -111,7 +111,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
           actionItemId: ib._id,
           action: helper.sysConst.permissionAccessTypes.CREATE,
           actionDate: new Date(),
-          actionBy: ib.createdByUser,
+          actionBy: req.appCurrentUserData._id,
         }, { session: session });
         await auditData.save();
 
@@ -216,14 +216,13 @@ router.put("/update/:id", authUser, ibTransactionStatusMiddleware.canUpdate, isV
           actionItemId: assetDetails._id,
           action: helper.sysConst.permissionAccessTypes.EDIT,
           actionDate: new Date(),
-          actionBy: assetDetails.createdByUser,
+          actionBy: req.appCurrentUserData._id,
         }, { session: session });
         await auditData.save();
 
         await session.commitTransaction();
 
         br.sendSuccess(res, assetDetails, 'Ib Transaction Status updated successfully!');
-        //res.send([req.appCurrentUserData, req.appCurrentUserPermissions]);
       } catch (error) {
         if(session.inTransaction()){
           await session.abortTransaction();
@@ -387,7 +386,7 @@ router.delete("/delete/:id", authUser, ibTransactionStatusMiddleware.canDelete, 
       actionItemId: assetDetails._id,
       action: helper.sysConst.permissionAccessTypes.DELETE,
       actionDate: new Date(),
-      actionBy: assetDetails.createdByUser,
+      actionBy: req.appCurrentUserData._id,
     }, { session: session });
     await auditData.save();
 

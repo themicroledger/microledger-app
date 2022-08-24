@@ -265,14 +265,13 @@ router.put("/update/:id", authUser, ibInterestTypeMiddleware.canUpdate, isValidP
                     actionItemId: configItemDetails._id,
                     action: helper.sysConst.permissionAccessTypes.EDIT,
                     actionDate: new Date(),
-                    actionBy: configItemDetails.createdByUser,
+                    actionBy: req.appCurrentUserData._id,
                 }, {session: session});
                 await auditData.save();
 
                 await session.commitTransaction();
 
                 br.sendSuccess(res, configItemDetails, 'Ib Interest Type updated successfully!');
-                //res.send([req.appCurrentUserData, req.appCurrentUserPermissions]);
             } catch (error) {
                 if (session.inTransaction()) {
                     await session.abortTransaction();
@@ -437,7 +436,7 @@ router.delete("/delete/:id", authUser, ibInterestTypeMiddleware.canDelete, isVal
             actionItemId: configItemDetails._id,
             action: helper.sysConst.permissionAccessTypes.DELETE,
             actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
+            actionBy: req.appCurrentUserData._id,
         }, {session: session});
         await auditData.save();
 

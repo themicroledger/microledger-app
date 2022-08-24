@@ -330,7 +330,7 @@ router.put("/update/:id", authUser, roundingTableMiddleware.canUpdate, isValidPa
                     actionItemId: configItemDetails._id,
                     action: helper.sysConst.permissionAccessTypes.EDIT,
                     actionDate: new Date(),
-                    actionBy: configItemDetails.createdByUser,
+                    actionBy: req.appCurrentUserData._id,
                 }, {session: session});
                 await auditData.save();
 
@@ -512,7 +512,7 @@ router.delete("/delete/:id", authUser, roundingTableMiddleware.canDelete, isVali
             actionItemId: configItemDetails._id,
             action: helper.sysConst.permissionAccessTypes.DELETE,
             actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
+            actionBy: req.appCurrentUserData._id,
         }, {session: session});
         await auditData.save();
 

@@ -119,7 +119,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                     actionItemId: ib._id,
                     action: helper.sysConst.permissionAccessTypes.CREATE,
                     actionDate: new Date(),
-                    actionBy: ib.createdByUser,
+                    actionBy: req.appCurrentUserData._id,
                 }, {session: session});
                 await auditData.save();
 
@@ -231,7 +231,7 @@ router.put("/update/:id", authUser, ibAssetMiddleware.canUpdate, isValidParamId,
                     actionItemId: assetDetails._id,
                     action: helper.sysConst.permissionAccessTypes.EDIT,
                     actionDate: new Date(),
-                    actionBy: assetDetails.createdByUser,
+                    actionBy: req.appCurrentUserData._id,
                 }, {session: session});
                 await auditData.save();
 
@@ -404,7 +404,7 @@ router.delete("/delete/:id", authUser, ibAssetMiddleware.canDelete, isValidParam
             actionItemId: assetDetails._id,
             action: helper.sysConst.permissionAccessTypes.DELETE,
             actionDate: new Date(),
-            actionBy: assetDetails.createdByUser,
+            actionBy: req.appCurrentUserData._id,
         }, {session: session});
         await auditData.save();
 

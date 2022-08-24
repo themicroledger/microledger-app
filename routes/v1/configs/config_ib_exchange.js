@@ -441,7 +441,7 @@ router.put("/update/:id", authUser, ibExchangeMiddleware.canUpdate, isValidParam
                     actionItemId: configItemDetails._id,
                     action: helper.sysConst.permissionAccessTypes.EDIT,
                     actionDate: new Date(),
-                    actionBy: configItemDetails.createdByUser,
+                    actionBy: req.appCurrentUserData._id,
                 }, {session: session});
                 await auditData.save();
 
@@ -668,7 +668,7 @@ router.delete("/delete/:id", authUser, ibExchangeMiddleware.canDelete, isValidPa
             actionItemId: configItemDetails._id,
             action: helper.sysConst.permissionAccessTypes.DELETE,
             actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
+            actionBy: req.appCurrentUserData._id,
         }, {session: session});
         await auditData.save();
 

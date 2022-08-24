@@ -647,6 +647,7 @@ let bondDataUpdate = {
                 inceptionRedemptionRate: data.inceptionRedemptionRate,
                 currentPoolFactor: data.currentPoolFactor,
                 firstCouponPaymentDate: data.firstCouponPaymentDate,
+                createdByUser: req.appCurrentUserData._id,
             }, {session: session});
             await ib.save();
 
@@ -737,7 +738,7 @@ let bondDataUpdate = {
             }, {session: session});
             await auditData.save();
 
-            if(needToCommit){
+            if (needToCommit) {
                 await session.commitTransaction();
             }
             callback(null, ib, 'Bond Security General Info added successfully!');
@@ -879,7 +880,7 @@ let bondDataUpdate = {
                 actionItemId: configItemDetails._id,
                 action: helper.sysConst.permissionAccessTypes.EDIT,
                 actionDate: new Date(),
-                actionBy: configItemDetails.createdByUser,
+                actionBy: req.appCurrentUserData._id,
             }, {session: session});
             await auditData.save();
 
@@ -991,11 +992,11 @@ let bondDataUpdate = {
                 actionItemId: configItemDetails._id,
                 action: helper.sysConst.permissionAccessTypes.EDIT,
                 actionDate: new Date(),
-                actionBy: configItemDetails.createdByUser,
+                actionBy: req.appCurrentUserData._id,
             }, {session: session});
             await auditData.save();
 
-            if(needToCommit){
+            if (needToCommit) {
                 await session.commitTransaction();
             }
             callback(null, {}, 'Bond Marker Conversion Info updated successfully!');
@@ -1106,11 +1107,11 @@ let bondDataUpdate = {
                 actionItemId: configItemDetails._id,
                 action: helper.sysConst.permissionAccessTypes.EDIT,
                 actionDate: new Date(),
-                actionBy: configItemDetails.createdByUser,
+                actionBy: req.appCurrentUserData._id,
             }, {session: session});
             await auditData.save();
 
-            if(needToCommit){
+            if (needToCommit) {
                 await session.commitTransaction();
             }
             callback(null, {}, 'Bond Reference rate Info updated successfully!');
@@ -1220,11 +1221,11 @@ let bondDataUpdate = {
                 actionItemId: configItemDetails._id,
                 action: helper.sysConst.permissionAccessTypes.EDIT,
                 actionDate: new Date(),
-                actionBy: configItemDetails.createdByUser,
+                actionBy: req.appCurrentUserData._id,
             }, {session: session});
             await auditData.save();
 
-            if(needToCommit){
+            if (needToCommit) {
                 await session.commitTransaction();
             }
             callback(null, {}, 'Bond Alternative Security Info updated successfully!');
@@ -1334,11 +1335,11 @@ let bondDataUpdate = {
                 actionItemId: configItemDetails._id,
                 action: helper.sysConst.permissionAccessTypes.EDIT,
                 actionDate: new Date(),
-                actionBy: configItemDetails.createdByUser,
+                actionBy: req.appCurrentUserData._id,
             }, {session: session});
             await auditData.save();
 
-            if(needToCommit){
+            if (needToCommit) {
                 await session.commitTransaction();
             }
             callback(null, {}, 'Bond Put Call Info updated successfully!');
@@ -1448,11 +1449,11 @@ let bondDataUpdate = {
                 actionItemId: configItemDetails._id,
                 action: helper.sysConst.permissionAccessTypes.EDIT,
                 actionDate: new Date(),
-                actionBy: configItemDetails.createdByUser,
+                actionBy: req.appCurrentUserData._id,
             }, {session: session});
             await auditData.save();
 
-            if(needToCommit){
+            if (needToCommit) {
                 await session.commitTransaction();
             }
             callback(null, {}, 'Bond Client Specific Fields updated successfully!');
@@ -1565,11 +1566,11 @@ let bondDataUpdate = {
                 actionItemId: configItemDetails._id,
                 action: helper.sysConst.permissionAccessTypes.EDIT,
                 actionDate: new Date(),
-                actionBy: configItemDetails.createdByUser,
+                actionBy: req.appCurrentUserData._id,
             }, {session: session});
             await auditData.save();
 
-            if(needToCommit){
+            if (needToCommit) {
                 await session.commitTransaction();
             }
             callback(null, {}, 'Bond Comments And Attachments updated successfully!');
@@ -1690,11 +1691,11 @@ let bondDataUpdate = {
                 actionItemId: configItemDetails._id,
                 action: helper.sysConst.permissionAccessTypes.EDIT,
                 actionDate: new Date(),
-                actionBy: configItemDetails.createdByUser,
+                actionBy: req.appCurrentUserData._id,
             }, {session: session});
             await auditData.save();
 
-            if(needToCommit){
+            if (needToCommit) {
                 await session.commitTransaction();
             }
             callback(null, {}, 'Bond Attachment removed successfully!');
@@ -1734,7 +1735,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                                 } else {
 
                                     // insert reference rates info
-                                    bondDataValidator.referenceRateValidator(req.body,async (err, data, msg) => {
+                                    bondDataValidator.referenceRateValidator(req.body, async (err, data, msg) => {
                                         if (err) {
                                             await session.abortTransaction();
                                             return callback(counter, false, msg);
@@ -1753,7 +1754,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                                                             return callback(counter, false, msg);
                                                         } else {
 
-                                                            await bondDataUpdate.updateAlternativeSecurityId(req, data, session, false,(err, data, msg) => {
+                                                            await bondDataUpdate.updateAlternativeSecurityId(req, data, session, false, (err, data, msg) => {
                                                                 if (err) {
                                                                     return callback(counter, false, msg);
                                                                 } else {
@@ -1778,7 +1779,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                                                                                             await session.abortTransaction();
                                                                                             return callback(counter, false, msg);
                                                                                         } else {
-                                                                                            await bondDataUpdate.updateClientSpecificFields(req, data, session, false,(err, data, msg) => {
+                                                                                            await bondDataUpdate.updateClientSpecificFields(req, data, session, false, (err, data, msg) => {
                                                                                                 if (err) {
                                                                                                     return callback(counter, false, msg);
                                                                                                 } else {
@@ -1791,7 +1792,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                                                                                                             return callback(counter, false, msg);
                                                                                                         } else {
 
-                                                                                                            await bondDataUpdate.updateCommentsAndAttachments(req, data, session, true,(err, data, msg) => {
+                                                                                                            await bondDataUpdate.updateCommentsAndAttachments(req, data, session, true, (err, data, msg) => {
                                                                                                                 if (err) {
                                                                                                                     callback(counter, false, msg);
                                                                                                                 } else {
@@ -1971,7 +1972,7 @@ router.post("/add/general", authUser, bondSecurityMiddleware.canCreate, (req, re
             let session = await mongo.startSession();
             session.startTransaction();
 
-            await bondDataUpdate.createBond(req, data, session, true,(err, data, msg) => {
+            await bondDataUpdate.createBond(req, data, session, true, (err, data, msg) => {
                 if (err) {
                     br.sendNotSuccessful(res, msg, err);
                 } else {
@@ -2102,7 +2103,7 @@ router.put("/update/general/:id", authUser, bondSecurityMiddleware.canUpdate, is
             let session = await mongo.startSession();
             session.startTransaction();
 
-            await bondDataUpdate.updateBondGeneral(req, data, session, true,(err, data, msg) => {
+            await bondDataUpdate.updateBondGeneral(req, data, session, true, (err, data, msg) => {
                 if (err) {
                     br.sendNotSuccessful(res, msg, err);
                 } else {
@@ -2307,7 +2308,7 @@ router.put("/update/reference-rate/:id", authUser, bondSecurityMiddleware.canUpd
             let session = await mongo.startSession();
             session.startTransaction();
 
-            await bondDataUpdate.updateReferenceRate(req, data, session, true,(err, data, msg) => {
+            await bondDataUpdate.updateReferenceRate(req, data, session, true, (err, data, msg) => {
                 if (err) {
                     br.sendNotSuccessful(res, msg, err);
                 } else {
@@ -2366,7 +2367,7 @@ router.put("/update/alternative-security-id/:id", authUser, bondSecurityMiddlewa
             let session = await mongo.startSession();
             session.startTransaction();
 
-            await bondDataUpdate.updateAlternativeSecurityId(req, data, session, true,(err, data, msg) => {
+            await bondDataUpdate.updateAlternativeSecurityId(req, data, session, true, (err, data, msg) => {
                 if (err) {
                     br.sendNotSuccessful(res, msg, err);
                 } else {
@@ -2433,7 +2434,7 @@ router.put("/update/put-calls/:id", authUser, bondSecurityMiddleware.canUpdate, 
             let session = await mongo.startSession();
             session.startTransaction();
 
-            await bondDataUpdate.updatePutCall(req, data, session, true,(err, data, msg) => {
+            await bondDataUpdate.updatePutCall(req, data, session, true, (err, data, msg) => {
                 if (err) {
                     br.sendNotSuccessful(res, msg, err);
                 } else {
@@ -2492,7 +2493,7 @@ router.put("/update/client-specific-fields/:id", authUser, bondSecurityMiddlewar
             let session = await mongo.startSession();
             session.startTransaction();
 
-            await bondDataUpdate.updateClientSpecificFields(req, data, session, true,(err, data, msg) => {
+            await bondDataUpdate.updateClientSpecificFields(req, data, session, true, (err, data, msg) => {
                 if (err) {
                     br.sendNotSuccessful(res, msg, err);
                 } else {
@@ -2556,7 +2557,7 @@ router.put("/update/comments-and-attachments/:id", authUser, bondSecurityMiddlew
             let session = await mongo.startSession();
             session.startTransaction();
 
-            await bondDataUpdate.updateCommentsAndAttachments(req, data, session, true,(err, data, msg) => {
+            await bondDataUpdate.updateCommentsAndAttachments(req, data, session, true, (err, data, msg) => {
                 if (err) {
                     br.sendNotSuccessful(res, msg, err);
                 } else {
@@ -2606,7 +2607,7 @@ router.put("/update/attachments/remove/:id", authUser, bondSecurityMiddleware.ca
             let session = await mongo.startSession();
             session.startTransaction();
 
-            await bondDataUpdate.removeAttachments(req, data, session, true,(err, data, msg) => {
+            await bondDataUpdate.removeAttachments(req, data, session, true, (err, data, msg) => {
                 if (err) {
                     br.sendNotSuccessful(res, msg, err);
                 } else {
@@ -2781,6 +2782,44 @@ router.get("/get-all", authUser, bondSecurityMiddleware.canRead, async (req, res
             isDeleted: false,
         }
 
+        let eligibleSearchKeys = [
+            "securityId",
+            "ISIN",
+            "userDefinedSecurityId",
+            "name",
+            "couponRate",
+            "couponTermUnit",
+            "redemptionTermUnit",
+            "inceptionRedemptionRate",
+            "currentPoolFactor",
+            "couponConventionPaymentType",
+            "couponConventionSequenceConvention",
+            "oddCouponsAndRedempOddConvLastCoupon",
+            "oddCouponsAndRedempOddConvLastRedeption",
+            "sequenceConventionRedemption",
+            "couponConventionsDayCount",
+            "accruedInterestConventionsDayCountConvention",
+            "accruedInterestConventionsCalculationMethod",
+            "defaultFixingDate",
+            "fixingUnits",
+            "compoundingConvention",
+            "spreadConventionOrCompounding",
+            "alternativeSecurityIdIdentificationSystem",
+            "alternativeSecurityIdLongSecurityName",
+            "alternativeSecurityIdCusip",
+            "alternativeSecurityIdIsin"
+        ];
+
+        if(req.query.searchKey !== undefined && eligibleSearchKeys.includes(req.query.searchKey.toString())){
+            let searchKey = req.query.searchKey.toString();
+            let searchData = req.query.search !== undefined ? req.query.search.toString() : '';
+            logger.info(`SearchKey: ${req.query.searchKey} => ${req.query.search}`);
+
+            filter[searchKey] = {
+                $regex: '/^' + searchData + '/i',
+            }
+        }
+
         /*        if (req.query.search !== undefined && req.query.search.length > 0) {
                     filter.costBasisProfileName = {
                         $regex: '/^' + req.query.search + '/i',
@@ -2797,18 +2836,18 @@ router.get("/get-all", authUser, bondSecurityMiddleware.canRead, async (req, res
             data: []
         };
 
-        if(parseInt(req.query.perPage) > 0){
+        if (parseInt(req.query.perPage) > 0) {
             result.perPage = parseInt(req.query.perPage);
         }
 
-        if(parseInt(req.query.page) > 0){
+        if (parseInt(req.query.page) > 0) {
             result.currentPage = parseInt(req.query.page);
         }
 
         result.total = await BondSecurityModel.find(filter).count();
-        if(result.total >= (result.currentPage * result.perPage)){
+        if (result.total <= (result.currentPage * result.perPage)) {
             result.data = await BondSecurityModel.find(filter)
-                .skip((result.currentPage - 1) * result.perPage )
+                .skip((result.currentPage - 1) * result.perPage)
                 .limit(result.perPage)
                 .populate([
                     'securityCode',
@@ -3001,7 +3040,7 @@ router.delete("/delete/:id", authUser, bondSecurityMiddleware.canDelete, isValid
             actionItemId: configItemDetails._id,
             action: helper.sysConst.permissionAccessTypes.DELETE,
             actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
+            actionBy: req.appCurrentUserData._id,
         }, {session: session});
         await auditData.save();
 
@@ -3156,7 +3195,7 @@ router.delete("/bulk/delete", authUser, bondSecurityMiddleware.canDelete, async 
                             actionItemId: configItemDetails._id,
                             action: helper.sysConst.permissionAccessTypes.DELETE,
                             actionDate: new Date(),
-                            actionBy: configItemDetails.createdByUser,
+                            actionBy: req.appCurrentUserData._id,
                         }, {session: session});
                         await auditData.save();
 
@@ -3166,7 +3205,7 @@ router.delete("/bulk/delete", authUser, bondSecurityMiddleware.canDelete, async 
                 }
             }
 
-            br.sendSuccess(res, {}, total == items ? 'All items deleted!' : 'Some of the items deleted kindly refresh the list to verify the deleted items!');
+            br.sendSuccess(res, {}, total === items ? 'All items deleted!' : 'Some of the items deleted kindly refresh the list to verify the deleted items!');
         } else {
             br.sendNotSuccessful(res, 'Nothing to delete! Please specify ids to delete items!');
         }

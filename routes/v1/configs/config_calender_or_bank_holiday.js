@@ -428,7 +428,7 @@ router.put("/update/:id", authUser, calenderMiddleware.canUpdate, isValidParamId
                     actionItemId: configItemDetails._id,
                     action: helper.sysConst.permissionAccessTypes.EDIT,
                     actionDate: new Date(),
-                    actionBy: configItemDetails.createdByUser,
+                    actionBy: req.appCurrentUserData._id,
                 }, {session: session});
                 await auditData.save();
 
@@ -620,7 +620,7 @@ router.delete("/delete/:id", authUser, calenderMiddleware.canDelete, isValidPara
             actionItemId: configItemDetails._id,
             action: helper.sysConst.permissionAccessTypes.DELETE,
             actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
+            actionBy: req.appCurrentUserData._id,
         }, {session: session});
         await auditData.save();
 
