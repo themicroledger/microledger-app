@@ -520,7 +520,7 @@ router.get("/get-all", authUser, accountingPeriodDefinitionMiddleware.canRead, a
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.apName = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 

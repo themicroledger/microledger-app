@@ -435,7 +435,7 @@ router.get("/get-all", authUser, abFrameworkMiddleware.canRead, async (req, res)
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.costBasisProfileName = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 

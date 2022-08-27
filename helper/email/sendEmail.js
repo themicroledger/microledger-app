@@ -21,13 +21,24 @@ module.exports = {
 
         return transporter.sendMail(mailOptions);
     },
-    sendPasswordResetEmail: (req, res, email, link) => {
+    sendPasswordResetEmail: (email, link) => {
 
         let mailOptions = {
             from: process.env.SENDER_EMAIL,
             to: email,
             subject: "Reset Password",
-            text: `Please click below link to reset your password  => ${link}`,
+            text: `Please click below link to reset your password  => ${link}. This link will be valid for 4 hours`,
+        };
+
+        return transporter.sendMail(mailOptions);
+    },
+    passwordResetCompletedEmail: (req, res, email) => {
+
+        let mailOptions = {
+            from: process.env.SENDER_EMAIL,
+            to: email,
+            subject: "Password Changed Successfully",
+            text: `Your account password has been changed successfully!`,
         };
 
         return transporter.sendMail(mailOptions);

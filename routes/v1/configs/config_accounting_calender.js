@@ -476,7 +476,7 @@ router.get("/get-all", authUser, accountingCalenderMiddleware.canRead, async (re
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.acName = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 

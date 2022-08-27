@@ -2,7 +2,7 @@ const express = require("express");
 const crypto = require('crypto');
 const bcrypt = require("bcrypt");
 const UserModel = require("../../models/userModel");
-const TokenModel = require("../../models/tokenModel");
+const TokenModel = require("../../models/resetTokenModel");
 const helper = require("../../helper/helper");
 const logger = require('../../helper/logger');
 const { Validator } = require("node-input-validator");
@@ -127,15 +127,17 @@ router.post("/reset/send-reset-link", (req, res) => {
                             if(err){
                                 logger.error(err);
                                 logger.error('Unable to generate reset token UserId => ' + userDetails._id.toString());
-                                br.sendError(res, {}, 'Unable to generate reset token!');
+                                br.sendError(res, {}, 'Unable to generate reset link! Please try again later!');
                             }else{
-                                await new Token({
+                                await new ResetToken({
                                     userId: userDetails._id,
                                     token: hash,
+                                    expiredAt: new Date(Date.now() + (4*1000*3600)),
                                     createdAt: Date.now(),
                                 }).save();
-
-                                sendEmail(userDetails.email,"Password Reset Request",{name: user.name,link: link,},"./template/requestResetPassword.handlebars");
+                                let clientURL = process.env[`APP_HOME_URL_${process.env.APP_ENV_MODE}`];
+                                let link = `${clientURL}/passwordReset?token=${resetToken}&email=${user.email}`;
+                                sendEmail.sendPasswordResetEmail(userDetails.email, link);
                             }
                         }).catch( err => {
                             logger.error(err);

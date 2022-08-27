@@ -538,7 +538,7 @@ router.get("/get-all", authUser, companyPortfolioMiddleware.canRead, async (req,
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.name = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 

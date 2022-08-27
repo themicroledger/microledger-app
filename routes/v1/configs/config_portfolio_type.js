@@ -324,7 +324,7 @@ router.get("/get-all", authUser, portfolioTypeMiddleware.canRead, async (req, re
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.portfolioType = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 

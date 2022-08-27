@@ -2816,15 +2816,17 @@ router.get("/get-all", authUser, bondSecurityMiddleware.canRead, async (req, res
             logger.info(`SearchKey: ${req.query.searchKey} => ${req.query.search}`);
 
             filter[searchKey] = {
-                $regex: '/^' + searchData + '/i',
+                $regex: new RegExp(`^${searchData}`, 'i'),
             }
         }
 
         /*        if (req.query.search !== undefined && req.query.search.length > 0) {
                     filter.costBasisProfileName = {
-                        $regex: '/^' + req.query.search + '/i',
+                        $regex: new RegExp('^' + req.query.search, 'i'),
                     }
                 }*/
+
+        console.log(filter);
         let result = {
             total: 0,
             perPage: 5,

@@ -443,7 +443,7 @@ router.get("/get-all", authUser, securityGroupMiddleware.canRead, async (req, re
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.securityGroupName = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 

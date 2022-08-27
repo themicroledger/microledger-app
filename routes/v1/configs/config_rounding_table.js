@@ -408,7 +408,7 @@ router.get("/get-all", authUser, roundingTableMiddleware.canRead, async (req, re
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.name = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 

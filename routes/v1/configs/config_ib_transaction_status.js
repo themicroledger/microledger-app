@@ -288,7 +288,7 @@ router.get("/get-all", authUser, ibTransactionStatusMiddleware.canRead, async (r
 
     if(req.query.search !== undefined && req.query.search.length > 0){
       filter.transactionStatus = {
-        $regex: '/^' + req.query.search + '/i',
+        $regex: new RegExp('^' + req.query.search, 'i'),
       }
     }
 

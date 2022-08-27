@@ -403,7 +403,7 @@ router.get("/get-all", authUser, costBasisRuleMiddleware.canRead, async (req, re
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.costBasisProfileName = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 

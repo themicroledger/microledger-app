@@ -695,7 +695,7 @@ router.get("/get-all", authUser, accountingTreatmentLookupMiddleware.canRead, as
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.atlId = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 

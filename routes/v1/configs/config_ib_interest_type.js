@@ -338,7 +338,7 @@ router.get("/get-all", authUser, ibInterestTypeMiddleware.canRead, async (req, r
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.interestTypeName = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 

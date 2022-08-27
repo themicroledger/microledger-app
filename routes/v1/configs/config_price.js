@@ -433,7 +433,7 @@ router.get("/get-all", authUser, priceMiddleware.canRead, async (req, res) => {
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.securityId = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 

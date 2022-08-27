@@ -399,7 +399,7 @@ router.get("/get-all", authUser, ledgerPeriodControlMiddleware.canRead, async (r
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.ledgerId = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 
