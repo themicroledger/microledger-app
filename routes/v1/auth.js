@@ -2,10 +2,11 @@ const express = require("express");
 const crypto = require('crypto');
 const bcrypt = require("bcrypt");
 const UserModel = require("../../models/userModel");
-const TokenModel = require("../../models/resetTokenModel");
+const sendEmail = require("../../helper/email/sendEmail");
+const ResetTokenModel = require("../../models/resetTokenModel");
 const helper = require("../../helper/helper");
 const logger = require('../../helper/logger');
-const { Validator } = require("node-input-validator");
+const {Validator} = require("node-input-validator");
 const br = helper.baseResponse;
 const router = new express.Router();
 const bcryptSalt = process.env.BCRYPT_SALT;
@@ -44,18 +45,21 @@ router.post("/login", (req, res) => {
 
         v.check().then(async (matched) => {
             if (!matched) {
-                br.sendNotSuccessful(res,'validation Error', v.errors);
+                br.sendNotSuccessful(res, 'validation Error', v.errors);
             } else {
-                const loginUser = await UserModel.find({ email: req.body.email, isDeleted: false }).populate('password');
+                const loginUser = await UserModel.find({email: req.body.email, isDeleted: false}).populate('password');
 
                 if (loginUser < 1) {
                     br.sendNotSuccessful(res, 'User not found!');
-                }else{
+                } else {
 
                     const cmp = await bcrypt.compare(req.body.password, loginUser[0].password);
                     if (cmp) {
                         const token = helper.generateToken({
                             email: loginUser[0].email
+                        });
+                        await UserModel.updateOne({_id: loginUser[0]._id}, {
+                            lastLoggedIn: new Date(),
                         });
                         br.sendSuccess(res, {
                             userData: {
@@ -70,8 +74,8 @@ router.post("/login", (req, res) => {
                             },
                             token: token
                         }, 'Login successful');
-                    }else{
-                        br.sendNotSuccessful(res,'Incorrect user password!');
+                    } else {
+                        br.sendNotSuccessful(res, 'Incorrect user password!');
                     }
                 }
             }
@@ -111,50 +115,271 @@ router.post("/reset/send-reset-link", (req, res) => {
 
     v.check().then((matched) => {
         if (!matched) {
-            res.status(422).send(br.withError('Missed Required files', v.errors));
+            res.status(422).send(br.withError('Please enter a valid email address!', v.errors));
         } else {
-            UserModel.find({ email: req.body.email, isDeleted: false }).then((userDetails) => {
+            UserModel.find({email: req.body.email, isDeleted: false}).then((userDetails) => {
                 if (userDetails.length < 1) {
                     br.sendNotSuccessful(res, 'User not found!');
-                }else{
+                } else {
                     userDetails = userDetails[0];
-                    TokenModel.deleteMany({
+                    ResetTokenModel.updateMany({
+                        expiredAt: {$gt: new Date()},
                         userId: userDetails._id
-                    }).then( result => {
+                    }, {expiredAt: new Date()}).then(result => {
                         console.log(result);
                         let resetToken = crypto.randomBytes(32).toString("hex");
-                        bcrypt.hash(resetToken, Number(bcryptSalt)).then( async (err, hash) => {
-                            if(err){
+                        bcrypt.hash(resetToken, Number(bcryptSalt)).then(async (hash, err) => {
+                            if (err) {
                                 logger.error(err);
                                 logger.error('Unable to generate reset token UserId => ' + userDetails._id.toString());
                                 br.sendError(res, {}, 'Unable to generate reset link! Please try again later!');
-                            }else{
-                                await new ResetToken({
+                            } else {
+                                let resetTokenData = await new ResetTokenModel({
                                     userId: userDetails._id,
                                     token: hash,
-                                    expiredAt: new Date(Date.now() + (4*1000*3600)),
+                                    expiredAt: new Date(Date.now() + (4 * 1000 * 3600)),
                                     createdAt: Date.now(),
                                 }).save();
                                 let clientURL = process.env[`APP_HOME_URL_${process.env.APP_ENV_MODE}`];
-                                let link = `${clientURL}/passwordReset?token=${resetToken}&email=${user.email}`;
-                                sendEmail.sendPasswordResetEmail(userDetails.email, link);
+                                let link = `${clientURL}resetPass?token=${resetToken}&id=${resetTokenData._id}`;
+                                await sendEmail.sendPasswordResetEmail(userDetails.email, link);
+                                br.sendSuccess(res, {}, 'Email sent to you email ' + userDetails.email);
                             }
-                        }).catch( err => {
+                        }).catch(err => {
                             logger.error(err);
                             logger.error('Unable to generate reset token UserId => ' + userDetails._id.toString());
                             br.sendError(res, {}, 'Unable to generate reset token!');
                         });
-                    }).catch( err => {
+                    }).catch(err => {
                         logger.error(err);
                         br.sendDatabaseError(res, {});
                     });
-                    let resetToken = crypto.randomBytes(32).toString("hex");
-
-                    //const link = `${clientURL}/passwordReset?token=${resetToken}&id=${user._id}`;
                 }
-            }).catch( err => {
+            }).catch(err => {
                 logger.error(err);
                 br.sendDatabaseError(res, {});
+            });
+        }
+    });
+});
+
+/**
+ * @swagger
+ * /api/v1/auth/verify/email:
+ *  post:
+ *      summary: Check reset link is valid or not
+ *      tags: [Auth]
+ *      parameters:
+ *      - name: verifyToken
+ *        in: query
+ *        description: Token to be verified!
+ *        default: bo
+ *      responses:
+ *          200:
+ *              description: Success
+ *          default:
+ *              description: Default response for this api
+ */
+router.post("/verify/email", (req, res) => {
+    const v = new Validator(req.body, {
+        token: 'required|string',
+        id: 'required|string',
+    });
+
+    v.check().then((matched) => {
+        if (!matched) {
+            br.sendNotSuccessful(res, 'Invalid token details', v.errors);
+        } else {
+            let {id, token} = req.body;
+
+            if (!helper.isValidObjectId(id)) {
+                return br.sendNotSuccessful(res, 'Invalid Token Id');
+            }
+
+            ResetTokenModel.findById(id).then((tokenDetails) => {
+                if (tokenDetails !== null) {
+                    bcrypt.compare(token, tokenDetails.token, (rejected, accepted) => {
+                        if (accepted) {
+                            if (tokenDetails.expiredAt > new Date()) {
+                                br.sendSuccess(res, {}, 'Please try to reset your password!');
+                            } else {
+                                br.sendNotSuccessful(res, 'Token Expired');
+                            }
+                        } else {
+                            return br.sendNotSuccessful(res, 'Invalid token data');
+                        }
+                    });
+                } else {
+                    return br.sendNotSuccessful(res, 'Anonymous Token details!')
+                }
+            }).catch(err => {
+                br.sendDatabaseError(res, err);
+            });
+        }
+    });
+});
+
+/**
+ * @swagger
+ * /api/v1/auth/reset/check-reset-link-valid:
+ *  post:
+ *      summary: Check reset link is valid or not
+ *      tags: [Auth]
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          token:
+ *                              type: string
+ *                              default: admin@gmail.com
+ *                          id:
+ *                              type: string
+ *                              default: admin@gmail.com
+ *      responses:
+ *          200:
+ *              description: Success
+ *          default:
+ *              description: Default response for this api
+ */
+router.post("/reset/check-reset-link-valid", (req, res) => {
+    const v = new Validator(req.body, {
+        token: 'required|string',
+        id: 'required|string',
+    });
+
+    v.check().then((matched) => {
+        if (!matched) {
+            br.sendNotSuccessful(res, 'Invalid token details', v.errors);
+        } else {
+            let {id, token} = req.body;
+
+            if (!helper.isValidObjectId(id)) {
+                return br.sendNotSuccessful(res, 'Invalid Token Id');
+            }
+
+            ResetTokenModel.findById(id).then((tokenDetails) => {
+                if (tokenDetails !== null) {
+                    bcrypt.compare(token, tokenDetails.token, (rejected, accepted) => {
+                        if (accepted) {
+                            if (tokenDetails.expiredAt > new Date()) {
+                                br.sendSuccess(res, {}, 'Please try to reset your password!');
+                            } else {
+                                br.sendNotSuccessful(res, 'Token Expired');
+                            }
+                        } else {
+                            return br.sendNotSuccessful(res, 'Invalid token data');
+                        }
+                    });
+                } else {
+                    return br.sendNotSuccessful(res, 'Anonymous Token details!')
+                }
+            }).catch(err => {
+                br.sendDatabaseError(res, err);
+            });
+        }
+    });
+});
+
+/**
+ * @swagger
+ * /api/v1/auth/reset/reset-password:
+ *  post:
+ *      summary: Check reset link is valid or not
+ *      tags: [Auth]
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          password:
+ *                              type: string
+ *                              default: password
+ *                          confirmPassword:
+ *                              type: string
+ *                              default: password
+ *                          token:
+ *                              type: string
+ *                              default: admin@gmail.com
+ *                          id:
+ *                              type: string
+ *                              default: admin@gmail.com
+ *      responses:
+ *          200:
+ *              description: Success
+ *          default:
+ *              description: Default response for this api
+ */
+router.post("/reset/reset-password", (req, res) => {
+    const v = new Validator(req.body, {
+        password: 'required|string|minLength:5|maxLength:16',
+        confirmPassword: 'required|string|minLength:5|maxLength:16',
+        token: 'required|string',
+        id: 'required|string',
+    });
+
+    v.check().then((matched) => {
+        if (!matched) {
+            br.sendNotSuccessful(res, 'Missing required fields!', v.errors);
+        } else {
+            let {password, confirmPassword, id, token} = req.body;
+
+            if (!helper.isValidObjectId(id)) {
+                return br.sendNotSuccessful(res, 'Invalid Token Id');
+            }
+
+            if (password !== confirmPassword) {
+                return br.sendNotSuccessful(res, 'password and confirmPassword did not matched!');
+            }
+
+            ResetTokenModel.find({_id: id}).then((tokenDetails) => {
+                if (tokenDetails.length === 1) {
+                    tokenDetails = tokenDetails[0];
+                    bcrypt.compare(token, tokenDetails.token, async (rejected, accepted) => {
+
+                        if (accepted) {
+                            if (tokenDetails.expiredAt > new Date()) {
+
+                                let userDetails = await UserModel.find({_id: tokenDetails.userId});
+                                if(userDetails.length > 0){
+                                    userDetails = userDetails[0];
+                                    if(userDetails.isDeleted){
+                                        return br.sendNotSuccessful(res, 'User is being deleted!', {});
+                                    }else{
+                                        await UserModel.updateOne({
+                                            _id: tokenDetails.userId
+                                        }, {
+                                            password: await helper.hashPassword(password)
+                                        });
+
+                                        await ResetTokenModel.updateOne({
+                                            _id: tokenDetails._id
+                                        }, {
+                                            expiredAt: new Date()
+                                        });
+
+                                        await sendEmail.sendPasswordResetCompletedEmail(userDetails.email);
+                                        br.sendSuccess(res, {}, 'User password changed successfully!');
+                                    }
+                                }else{
+                                    return br.sendNotSuccessful(res, 'User does not exists!', {});
+                                }
+                            } else {
+                                br.sendNotSuccessful(res, 'Token Expired');
+                            }
+                        } else {
+                            return br.sendNotSuccessful(res, 'Invalid token data');
+                        }
+                    });
+                } else {
+                    return br.sendNotSuccessful(res, 'Anonymous Token details!')
+                }
+            }).catch(err => {
+                br.sendDatabaseError(res, err);
             });
         }
     });
