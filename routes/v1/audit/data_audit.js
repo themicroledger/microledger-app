@@ -148,9 +148,9 @@ router.get("/get-all", authUser, bondSecurityMiddleware.canRead, async (req, res
         let searchFilters = allAudits.map(a => a.searchFilter.toLowerCase());
         let excludeBondItems = false;
 
-        if(req.query.auditFor !== undefined && req.query.auditFor !== null && req.query.auditFor.length > 0){
+        if (req.query.auditFor !== undefined && req.query.auditFor !== null && req.query.auditFor.length > 0) {
             let searchItems = req.query.auditFor.split(',');
-            let needToFilterItems = searchFilters.filter( a => searchItems.includes(a.toString().toLowerCase()));
+            let needToFilterItems = searchFilters.filter(a => searchItems.includes(a.toString().toLowerCase()));
             searchFilters = needToFilterItems.length > 0 ? needToFilterItems : searchFilters;
             excludeBondItems = searchFilters.includes('bond');
         }
@@ -172,7 +172,7 @@ router.get("/get-all", authUser, bondSecurityMiddleware.canRead, async (req, res
 
         console.log(searchFilters);
         allAudits.forEach((au) => {
-            if(searchFilters.includes(au.searchFilter) && au.searchFilter !== 'bond'){
+            if (searchFilters.includes(au.searchFilter) && au.searchFilter !== 'bond') {
                 let filterPipeline = [
                     {
                         '$addFields': {
@@ -197,15 +197,24 @@ router.get("/get-all", authUser, bondSecurityMiddleware.canRead, async (req, res
         });
 
         //exclude bond items
-        if(excludeBondItems){
+        if (excludeBondItems) {
             pipeline.push({
-                $match : {
+                $match: {
                     collectionName: {
-                        $nin : [ 'Bond' ]
+                        $nin: ['Bond']
                     }
                 }
             });
         }
+
+        pipeline.push({
+            $lookup: {
+                from: 'users',
+                localField: 'actionBy',
+                foreignField: '_id',
+                as: 'auditedUser'
+            }
+        });
 
         let result = {
             total: 0,
@@ -247,9 +256,9 @@ router.get("/get-all", authUser, bondSecurityMiddleware.canRead, async (req, res
         }, {
             '$limit': result.perPage
         }]);
-/*        if (result.total <= (result.currentPage * result.perPage)) {
-            result.data = await BondSecurityModel.aggregate(pipeline);
-        }*/
+        /*        if (result.total <= (result.currentPage * result.perPage)) {
+                    result.data = await BondSecurityModel.aggregate(pipeline);
+                }*/
 
         result.from = offset + 1;
         result.to = offset + result.data.length;

@@ -1247,10 +1247,14 @@ let bondDataUpdate = {
             data.changedByUser = req.appCurrentUserData._id;
             data.changedDate = new Date();
 
+            console.log(data);
+
             await BondSecurityModel.updateOne({_id: id}, data).session(session);
 
             let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
             configItemDetails = configItemDetails[0];
+
+            console.log(configItemDetails);
 
             const auditData = new BondSecurityAuditModel({
                 securityId: configItemDetails.securityId,
@@ -2400,7 +2404,7 @@ router.put("/update/alternative-security-id/:id", authUser, bondSecurityMiddlewa
  *                  schema:
  *                      type: object
  *                      properties:
- *                          alternativeSecurityIdIdentificationSystem:
+ *                          putCalls:
  *                              type: array
  *                              items:
  *                                  type: object

@@ -252,11 +252,11 @@ const configLedgerLookupSchema = new mongoose.Schema({
     alternativeSecurityIdIsin: String,
     putCalls: [{
         fromDate: {
-            type: String,
+            type: Date,
             required: true
         },
         toDate: {
-            type: String,
+            type: Date,
             required: true
         },
         price: {

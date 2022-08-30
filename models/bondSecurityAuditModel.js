@@ -250,41 +250,8 @@ const configLedgerLookupAuditSchema = new mongoose.Schema({
     alternativeSecurityIdLongSecurityName: String,
     alternativeSecurityIdCusip: String,
     alternativeSecurityIdIsin: String,
-    putCalls: [{
-        fromDate: {
-            type: String,
-            required: true
-        },
-        toDate: {
-            type: String,
-            required: true
-        },
-        price: {
-            type: Number,
-            min: 0,
-            required: true
-        },
-        noOfDays: {
-            type: Number,
-            min: 0,
-            required: true
-        },
-        optionType: {
-            type: String,
-            required: true,
-            enum: sysConst.putCall
-        }
-    }],
-    clientSpecificFields: [{
-        name: {
-            type: String,
-            required: true
-        },
-        value: {
-            type: String,
-            required: true
-        }
-    }],
+    putCalls: Array,
+    clientSpecificFields: Array,
     attachments: [ String ],
     comments: String,
     changedByUser: {
