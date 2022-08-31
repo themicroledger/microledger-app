@@ -510,7 +510,7 @@ let bondDataValidator = {
     },
     clientSpecificFieldsValidator: (inputData, callback) => {
         const v = new Validator(inputData, {
-            clientSpecificFields: inputData.clientSpecificFields,
+            clientSpecificFields: 'array',
         });
 
         v.check().then(async (matched) => {
@@ -2472,7 +2472,7 @@ router.put("/update/put-calls/:id", authUser, bondSecurityMiddleware.canUpdate, 
  *                  schema:
  *                      type: object
  *                      properties:
- *                          alternativeSecurityIdIdentificationSystem:
+ *                          clientSpecificFields:
  *                              type: array
  *                              items:
  *                                  type: object
