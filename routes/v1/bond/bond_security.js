@@ -523,11 +523,11 @@ let bondDataValidator = {
                 };
 
                 if (!Array.isArray(data.clientSpecificFields)) {
-                    return callback({}, null, 'putCalls should be and formatted array!');
+                    return callback({}, null, 'clientSpecificFields should be and formatted array!');
                 } else {
                     let allFields = [];
 
-                    data.putCalls.forEach((item, index) => {
+                    data.clientSpecificFields.forEach((item, index) => {
                         if (item.name !== undefined
                             && item.value !== undefined) {
                             allFields.push({
