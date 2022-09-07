@@ -1244,6 +1244,7 @@ let bondDataUpdate = {
                 return callback({notFound: true}, null, `Bond Security with id => ${id} not found or deleted!`);
             }
 
+            data.putCalls = [...configItem[0].putCalls, ...data.putCalls];
             data.changedByUser = req.appCurrentUserData._id;
             data.changedDate = new Date();
 
@@ -1362,6 +1363,7 @@ let bondDataUpdate = {
                 return callback({notFound: true}, null, `Bond Security with id => ${id} not found or deleted!`);
             }
 
+            data.clientSpecificFields = [...configItem[0].clientSpecificFields, ...data.clientSpecificFields];
             data.changedByUser = req.appCurrentUserData._id;
             data.changedDate = new Date();
 
