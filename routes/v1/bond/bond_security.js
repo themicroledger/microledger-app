@@ -563,6 +563,40 @@ let bondDataValidator = {
             }
         });
     },
+    removePutCallsValidator: (inputData, callback) => {
+        const v = new Validator(inputData, {
+            ids: 'required|string'
+        });
+
+        v.check().then(async (matched) => {
+            if (!matched) {
+                callback(v.errors, null, 'Missing required fields');
+            } else {
+                let data = {
+                    ids: inputData.ids.split(','),
+                };
+
+                callback(null, data, 'All data validated');
+            }
+        });
+    },
+    removeClientSpecificFieldsValidator: (inputData, callback) => {
+        const v = new Validator(inputData, {
+            ids: 'required|string'
+        });
+
+        v.check().then(async (matched) => {
+            if (!matched) {
+                callback(v.errors, null, 'Missing required fields');
+            } else {
+                let data = {
+                    ids: inputData.ids.split(','),
+                };
+
+                callback(null, data, 'All data validated');
+            }
+        });
+    },
     removeAttachmentValidator: (inputData, callback) => {
         const v = new Validator(inputData, {
             url: 'required|string'
@@ -1353,6 +1387,131 @@ let bondDataUpdate = {
             callback(e, null, 'Server Error!');
         }
     },
+    removePutCalls: async (req, data, session, needToCommit, callback) => {
+        try {
+            let id = req.validParamId;
+
+            let configItem = await BondSecurityModel.find({_id: id, isDeleted: false});
+
+            if (configItem.length === 0) {
+                return callback({notFound: true}, null, `Bond Security with id => ${id} not found or deleted!`);
+            }
+            configItem = configItem[0];
+
+            let putCalls = [];
+
+            configItem.putCalls.forEach((item) => {
+                if (!item._id.includes(data.ids)) {
+                    putCalls.push(item);
+                }
+            });
+
+            data = {};
+            data.putCalls = putCalls;
+            data.changedByUser = req.appCurrentUserData._id;
+            data.changedDate = new Date();
+
+            await BondSecurityModel.updateOne({_id: id}, data).session(session);
+
+            let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
+            configItemDetails = configItemDetails[0];
+
+            const auditData = new BondSecurityAuditModel({
+                securityId: configItemDetails.securityId,
+                ISIN: configItemDetails.ISIN,
+                userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
+                name: configItemDetails.name,
+                securityCode: configItemDetails.securityCode,
+                currency: configItemDetails.currency,
+                paymentHolidayCalender: configItemDetails.paymentHolidayCalender,
+                exchange: configItemDetails.exchange,
+                quoted: configItemDetails.quoted,
+                minTradeVolume: configItemDetails.minTradeVolume,
+                volume: configItemDetails.volume,
+                issuer: configItemDetails.issuer,
+                issueDate: configItemDetails.issueDate,
+                issuePrice: configItemDetails.issuePrice,
+                redemptionPrice: configItemDetails.redemptionPrice,
+                redemptionCurrency: configItemDetails.redemptionCurrency,
+                interestType: configItemDetails.interestType,
+                couponRate: configItemDetails.couponRate,
+                maturityDate: configItemDetails.maturityDate,
+                structure: configItemDetails.structure,
+                firstRedemptionDate: configItemDetails.firstRedemptionDate,
+                couponTerm: configItemDetails.couponTerm,
+                couponTermUnit: configItemDetails.couponTermUnit,
+                redemptionTerm: configItemDetails.redemptionTerm,
+                redemptionTermUnit: configItemDetails.redemptionTermUnit,
+                inceptionRedemptionRate: configItemDetails.inceptionRedemptionRate,
+                currentPoolFactor: configItemDetails.currentPoolFactor,
+                firstCouponPaymentDate: configItemDetails.firstCouponPaymentDate,
+                quotation: configItemDetails.quotation,
+                settlementDays: configItemDetails.settlementDays,
+                quoteType: configItemDetails.quoteType,
+                quotingLotSize: configItemDetails.quotingLotSize,
+                quotingFaceValue: configItemDetails.quotingFaceValue,
+                couponConventionDayCount: configItemDetails.couponConventionDayCount,
+                couponConventionPaymentDayConvention: configItemDetails.couponConventionPaymentDayConvention,
+                couponConventionTreasuryTermCoupon: configItemDetails.couponConventionTreasuryTermCoupon,
+                couponConventionEndOfMonthConvention: configItemDetails.couponConventionEndOfMonthConvention,
+                couponConventionTreasuryTermCouponBase: configItemDetails.couponConventionTreasuryTermCouponBase,
+                couponConventionHolidayAdjustedCouponFlag: configItemDetails.couponConventionHolidayAdjustedCouponFlag,
+                couponConventionPaymentType: configItemDetails.couponConventionPaymentType,
+                couponConventionFixedRateDeCompounding: configItemDetails.couponConventionFixedRateDeCompounding,
+                couponConventionInclExclOneDay: configItemDetails.couponConventionInclExclOneDay,
+                couponConventionSequenceConvention: configItemDetails.couponConventionSequenceConvention,
+                oddCouponsAndRedempOddConvLastCoupon: configItemDetails.oddCouponsAndRedempOddConvLastCoupon,
+                oddCouponsAndRedempOddConvLastRedeption: configItemDetails.oddCouponsAndRedempOddConvLastRedeption,
+                sequenceConventionRedemption: configItemDetails.sequenceConventionRedemption,
+                couponConventionsDayCount: configItemDetails.couponConventionsDayCount,
+                accruedInterestConventionsInterestType: configItemDetails.accruedInterestConventionsInterestType,
+                accruedInterestConventionsTreasuryProduct: configItemDetails.accruedInterestConventionsTreasuryProduct,
+                accruedInterestConventionsDayCountConvention: configItemDetails.accruedInterestConventionsDayCountConvention,
+                accruedInterestConventionsCalculationMethod: configItemDetails.accruedInterestConventionsCalculationMethod,
+                floatingRatesReferenceRate: configItemDetails.floatingRatesReferenceRate,
+                floatingRatesSpreadRate: configItemDetails.floatingRatesSpreadRate,
+                interestLookBackPeriod: configItemDetails.interestLookBackPeriod,
+                interestMultiplierFactor: configItemDetails.interestMultiplierFactor,
+                interestAdjustmentFixingDays: configItemDetails.interestAdjustmentFixingDays,
+                defaultFixingDate: configItemDetails.defaultFixingDate,
+                defaultFixingRate: configItemDetails.defaultFixingRate,
+                fixingTerm: configItemDetails.fixingTerm,
+                fixingUnits: configItemDetails.fixingUnits,
+                rateResetHolidayCalender: configItemDetails.rateResetHolidayCalender,
+                compoundingConvention: configItemDetails.compoundingConvention,
+                spreadConventionOrCompounding: configItemDetails.spreadConventionOrCompounding,
+                couponRateMinimum: configItemDetails.couponRateMinimum,
+                couponRateMaximum: configItemDetails.couponRateMaximum,
+                alternativeSecurityIdIdentificationSystem: configItemDetails.alternativeSecurityIdIdentificationSystem,
+                alternativeSecurityIdLongSecurityName: configItemDetails.alternativeSecurityIdLongSecurityName,
+                alternativeSecurityIdCusip: configItemDetails.alternativeSecurityIdCusip,
+                alternativeSecurityIdIsin: configItemDetails.alternativeSecurityIdIsin,
+                putCalls: configItemDetails.putCalls,
+                clientSpecificFields: configItemDetails.clientSpecificFields,
+                attachments: configItemDetails.attachments,
+                comments: configItemDetails.comments,
+                changedByUser: configItemDetails.changedByUser,
+                changedDate: configItemDetails.changedDate,
+                createdByUser: configItemDetails.createdByUser,
+                isDeleted: configItemDetails.isDeleted,
+                deletedBy: configItemDetails.deletedBy,
+                deleteReason: configItemDetails.deleteReason,
+                actionItemId: configItemDetails._id,
+                action: helper.sysConst.permissionAccessTypes.EDIT,
+                actionDate: new Date(),
+                actionBy: req.appCurrentUserData._id,
+            }, {session: session});
+            await auditData.save();
+
+            if (needToCommit) {
+                await session.commitTransaction();
+            }
+            callback(null, {}, 'Bond Put Calls removed successfully!');
+        } catch (e) {
+            await session.abortTransaction();
+            callback(e, null, 'Server Error!');
+        }
+    },
     updateClientSpecificFields: async (req, data, session, needToCommit, callback) => {
         try {
             let id = req.validParamId;
@@ -1463,6 +1622,131 @@ let bondDataUpdate = {
                 await session.commitTransaction();
             }
             callback(null, {}, 'Bond Client Specific Fields updated successfully!');
+        } catch (e) {
+            await session.abortTransaction();
+            callback(e, null, 'Server Error!');
+        }
+    },
+    removeClientSpecificFields: async (req, data, session, needToCommit, callback) => {
+        try {
+            let id = req.validParamId;
+
+            let configItem = await BondSecurityModel.find({_id: id, isDeleted: false});
+
+            if (configItem.length === 0) {
+                return callback({notFound: true}, null, `Bond Security with id => ${id} not found or deleted!`);
+            }
+            configItem = configItem[0];
+
+            let clientSpecificFields = [];
+
+            configItem.clientSpecificFields.forEach((item) => {
+                if (!item._id.includes(data.ids)) {
+                    clientSpecificFields.push(item);
+                }
+            });
+
+            data = {};
+            data.clientSpecificFields = clientSpecificFields;
+            data.changedByUser = req.appCurrentUserData._id;
+            data.changedDate = new Date();
+
+            await BondSecurityModel.updateOne({_id: id}, data).session(session);
+
+            let configItemDetails = await BondSecurityModel.find({_id: id, isDeleted: false}).session(session);
+            configItemDetails = configItemDetails[0];
+
+            const auditData = new BondSecurityAuditModel({
+                securityId: configItemDetails.securityId,
+                ISIN: configItemDetails.ISIN,
+                userDefinedSecurityId: configItemDetails.userDefinedSecurityId,
+                name: configItemDetails.name,
+                securityCode: configItemDetails.securityCode,
+                currency: configItemDetails.currency,
+                paymentHolidayCalender: configItemDetails.paymentHolidayCalender,
+                exchange: configItemDetails.exchange,
+                quoted: configItemDetails.quoted,
+                minTradeVolume: configItemDetails.minTradeVolume,
+                volume: configItemDetails.volume,
+                issuer: configItemDetails.issuer,
+                issueDate: configItemDetails.issueDate,
+                issuePrice: configItemDetails.issuePrice,
+                redemptionPrice: configItemDetails.redemptionPrice,
+                redemptionCurrency: configItemDetails.redemptionCurrency,
+                interestType: configItemDetails.interestType,
+                couponRate: configItemDetails.couponRate,
+                maturityDate: configItemDetails.maturityDate,
+                structure: configItemDetails.structure,
+                firstRedemptionDate: configItemDetails.firstRedemptionDate,
+                couponTerm: configItemDetails.couponTerm,
+                couponTermUnit: configItemDetails.couponTermUnit,
+                redemptionTerm: configItemDetails.redemptionTerm,
+                redemptionTermUnit: configItemDetails.redemptionTermUnit,
+                inceptionRedemptionRate: configItemDetails.inceptionRedemptionRate,
+                currentPoolFactor: configItemDetails.currentPoolFactor,
+                firstCouponPaymentDate: configItemDetails.firstCouponPaymentDate,
+                quotation: configItemDetails.quotation,
+                settlementDays: configItemDetails.settlementDays,
+                quoteType: configItemDetails.quoteType,
+                quotingLotSize: configItemDetails.quotingLotSize,
+                quotingFaceValue: configItemDetails.quotingFaceValue,
+                couponConventionDayCount: configItemDetails.couponConventionDayCount,
+                couponConventionPaymentDayConvention: configItemDetails.couponConventionPaymentDayConvention,
+                couponConventionTreasuryTermCoupon: configItemDetails.couponConventionTreasuryTermCoupon,
+                couponConventionEndOfMonthConvention: configItemDetails.couponConventionEndOfMonthConvention,
+                couponConventionTreasuryTermCouponBase: configItemDetails.couponConventionTreasuryTermCouponBase,
+                couponConventionHolidayAdjustedCouponFlag: configItemDetails.couponConventionHolidayAdjustedCouponFlag,
+                couponConventionPaymentType: configItemDetails.couponConventionPaymentType,
+                couponConventionFixedRateDeCompounding: configItemDetails.couponConventionFixedRateDeCompounding,
+                couponConventionInclExclOneDay: configItemDetails.couponConventionInclExclOneDay,
+                couponConventionSequenceConvention: configItemDetails.couponConventionSequenceConvention,
+                oddCouponsAndRedempOddConvLastCoupon: configItemDetails.oddCouponsAndRedempOddConvLastCoupon,
+                oddCouponsAndRedempOddConvLastRedeption: configItemDetails.oddCouponsAndRedempOddConvLastRedeption,
+                sequenceConventionRedemption: configItemDetails.sequenceConventionRedemption,
+                couponConventionsDayCount: configItemDetails.couponConventionsDayCount,
+                accruedInterestConventionsInterestType: configItemDetails.accruedInterestConventionsInterestType,
+                accruedInterestConventionsTreasuryProduct: configItemDetails.accruedInterestConventionsTreasuryProduct,
+                accruedInterestConventionsDayCountConvention: configItemDetails.accruedInterestConventionsDayCountConvention,
+                accruedInterestConventionsCalculationMethod: configItemDetails.accruedInterestConventionsCalculationMethod,
+                floatingRatesReferenceRate: configItemDetails.floatingRatesReferenceRate,
+                floatingRatesSpreadRate: configItemDetails.floatingRatesSpreadRate,
+                interestLookBackPeriod: configItemDetails.interestLookBackPeriod,
+                interestMultiplierFactor: configItemDetails.interestMultiplierFactor,
+                interestAdjustmentFixingDays: configItemDetails.interestAdjustmentFixingDays,
+                defaultFixingDate: configItemDetails.defaultFixingDate,
+                defaultFixingRate: configItemDetails.defaultFixingRate,
+                fixingTerm: configItemDetails.fixingTerm,
+                fixingUnits: configItemDetails.fixingUnits,
+                rateResetHolidayCalender: configItemDetails.rateResetHolidayCalender,
+                compoundingConvention: configItemDetails.compoundingConvention,
+                spreadConventionOrCompounding: configItemDetails.spreadConventionOrCompounding,
+                couponRateMinimum: configItemDetails.couponRateMinimum,
+                couponRateMaximum: configItemDetails.couponRateMaximum,
+                alternativeSecurityIdIdentificationSystem: configItemDetails.alternativeSecurityIdIdentificationSystem,
+                alternativeSecurityIdLongSecurityName: configItemDetails.alternativeSecurityIdLongSecurityName,
+                alternativeSecurityIdCusip: configItemDetails.alternativeSecurityIdCusip,
+                alternativeSecurityIdIsin: configItemDetails.alternativeSecurityIdIsin,
+                putCalls: configItemDetails.putCalls,
+                clientSpecificFields: configItemDetails.clientSpecificFields,
+                attachments: configItemDetails.attachments,
+                comments: configItemDetails.comments,
+                changedByUser: configItemDetails.changedByUser,
+                changedDate: configItemDetails.changedDate,
+                createdByUser: configItemDetails.createdByUser,
+                isDeleted: configItemDetails.isDeleted,
+                deletedBy: configItemDetails.deletedBy,
+                deleteReason: configItemDetails.deleteReason,
+                actionItemId: configItemDetails._id,
+                action: helper.sysConst.permissionAccessTypes.EDIT,
+                actionDate: new Date(),
+                actionBy: req.appCurrentUserData._id,
+            }, {session: session});
+            await auditData.save();
+
+            if (needToCommit) {
+                await session.commitTransaction();
+            }
+            callback(null, {}, 'Bond Client Specific Fields removed successfully!');
         } catch (e) {
             await session.abortTransaction();
             callback(e, null, 'Server Error!');
@@ -2458,6 +2742,56 @@ router.put("/update/put-calls/:id", authUser, bondSecurityMiddleware.canUpdate, 
 
 /**
  * @swagger
+ * /api/v1/bond/update/put-calls/remove/{id}:
+ *  put:
+ *      summary: Remove Bond Attachments Information
+ *      tags: [Bond]
+ *      parameters:
+ *      - name: id
+ *        in: path
+ *        description: Bond Security Id
+ *        default: 6287f9cc5f9120bbbbc36f59
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          ids:
+ *                              type: string
+ *                              default: 6287f9cc5f9120bbbbc36f59,6287f9cc5f9120bbbbc36f52
+ *      responses:
+ *          200:
+ *              description: Success
+ *          default:
+ *              description: Default response for this api
+ */
+router.put("/update/put-calls/remove/:id", authUser, bondSecurityMiddleware.canUpdate, isValidParamId, (req, res) => {
+    bondDataValidator.removePutCallsValidator(req.body, async (err, data, msg) => {
+        if (err) {
+            br.sendNotSuccessful(res, msg, err);
+        } else {
+            let session = await mongo.startSession();
+            session.startTransaction();
+
+            await bondDataUpdate.removePutCalls(req, data, session, true, (err, data, msg) => {
+                if (err) {
+                    br.sendNotSuccessful(res, msg, err);
+                } else {
+                    br.sendSuccess(res, data, msg);
+                }
+            }).catch((err) => {
+                br.sendServerError(res, err);
+            }).finally(() => {
+                session.endSession();
+            });
+        }
+    });
+});
+
+/**
+ * @swagger
  * /api/v1/bond/update/client-specific-fields/{id}:
  *  put:
  *      summary: Update Bond Client Specific Fields Information
@@ -2507,6 +2841,56 @@ router.put("/update/client-specific-fields/:id", authUser, bondSecurityMiddlewar
                 }
             }).catch((err) => {
                 session.abortTransaction();
+            }).finally(() => {
+                session.endSession();
+            });
+        }
+    });
+});
+
+/**
+ * @swagger
+ * /api/v1/bond/update/client-specific-fields/remove/{id}:
+ *  put:
+ *      summary: Remove Bond Attachments Information
+ *      tags: [Bond]
+ *      parameters:
+ *      - name: id
+ *        in: path
+ *        description: Bond Security Id
+ *        default: 6287f9cc5f9120bbbbc36f59
+ *      requestBody:
+ *          required: true
+ *          content:
+ *              application/json:
+ *                  schema:
+ *                      type: object
+ *                      properties:
+ *                          ids:
+ *                              type: string
+ *                              default: 6287f9cc5f9120bbbbc36f59,6287f9cc5f9120bbbbc36f52
+ *      responses:
+ *          200:
+ *              description: Success
+ *          default:
+ *              description: Default response for this api
+ */
+router.put("/update/client-specific-fields/remove/:id", authUser, bondSecurityMiddleware.canUpdate, isValidParamId, (req, res) => {
+    bondDataValidator.removeClientSpecificFieldsValidator(req.body, async (err, data, msg) => {
+        if (err) {
+            br.sendNotSuccessful(res, msg, err);
+        } else {
+            let session = await mongo.startSession();
+            session.startTransaction();
+
+            await bondDataUpdate.removeClientSpecificFields(req, data, session, true, (err, data, msg) => {
+                if (err) {
+                    br.sendNotSuccessful(res, msg, err);
+                } else {
+                    br.sendSuccess(res, data, msg);
+                }
+            }).catch((err) => {
+                br.sendServerError(res, err);
             }).finally(() => {
                 session.endSession();
             });
@@ -2816,7 +3200,7 @@ router.get("/get-all", authUser, bondSecurityMiddleware.canRead, async (req, res
             "alternativeSecurityIdIsin"
         ];
 
-        if(req.query.searchKey !== undefined && eligibleSearchKeys.includes(req.query.searchKey.toString())){
+        if (req.query.searchKey !== undefined && eligibleSearchKeys.includes(req.query.searchKey.toString())) {
             let searchKey = req.query.searchKey.toString();
             let searchData = req.query.search !== undefined ? req.query.search.toString() : '';
             logger.info(`SearchKey: ${req.query.searchKey} => ${req.query.search}`);
@@ -2856,7 +3240,7 @@ router.get("/get-all", authUser, bondSecurityMiddleware.canRead, async (req, res
         let lp = Math.ceil(result.total / result.perPage);
         let offset = (result.currentPage - 1) * result.perPage;
         result.lastPage = lp > 1 ? lp : null;
-        result.nextPage = result.total > (result.perPage * result.currentPage ) ? result.currentPage + 1 : null;
+        result.nextPage = result.total > (result.perPage * result.currentPage) ? result.currentPage + 1 : null;
 
         if (result.total <= (result.currentPage * result.perPage)) {
             result.data = await BondSecurityModel.find(filter)
