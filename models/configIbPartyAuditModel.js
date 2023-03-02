@@ -108,6 +108,17 @@ const configIbPartyAuditSchema = new mongoose.Schema({
         type: Boolean,
         required: false
     },
+    additionPartyData: [{
+        name: {
+            type: String,
+            unique: true,
+            required: true
+        },
+        value: {
+            type: String,
+            required: true
+        }
+    }],
     changedByUser: {
         type: mongoose.Schema.Types.ObjectId,
         default: null,

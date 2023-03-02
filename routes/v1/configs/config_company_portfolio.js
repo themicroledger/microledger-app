@@ -5,10 +5,10 @@ const logger = require('../../../helper/logger');
 const moment = require('moment');
 const br = helper.baseResponse;
 const router = new express.Router();
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const PortfolioGroupModel = require('../../../models/configPortfolioGroupModel');
 const PortfolioTypeModel = require('../../../models/configPortfolioTypeModel');
-const IbCompanyModel = require('../../../models/configPortfolioTypeModel');
+const IbCompanyModel = require('../../../models/configIbCompanyModel');
 const CurrencyModel = require('../../../models/configCurrencyModel');
 const CompanyPortfolioModel = require('../../../models/configCompanyPortfolioModel');
 const CompanyPortfolioAuditModel = require('../../../models/configCompanyPortfolioAuditModel');
@@ -93,7 +93,7 @@ router.post("/add", authUser, companyPortfolioMiddleware.canCreate, (req, res) =
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, companyPortfolioMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, companyPortfolioMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
     await processBulkInsert(req, res, 'Company Portfolio', insertData);
 });
 
@@ -458,7 +458,7 @@ router.put("/update/:id", authUser, companyPortfolioMiddleware.canUpdate, isVali
                     actionItemId: configItemDetails._id,
                     action: helper.sysConst.permissionAccessTypes.EDIT,
                     actionDate: new Date(),
-                    actionBy: configItemDetails.createdByUser,
+                    actionBy: req.appCurrentUserData._id,
                 }, {session: session});
                 await auditData.save();
 
@@ -538,7 +538,7 @@ router.get("/get-all", authUser, companyPortfolioMiddleware.canRead, async (req,
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.name = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 
@@ -647,7 +647,7 @@ router.delete("/delete/:id", authUser, companyPortfolioMiddleware.canDelete, isV
             actionItemId: configItemDetails._id,
             action: helper.sysConst.permissionAccessTypes.DELETE,
             actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
+            actionBy: req.appCurrentUserData._id,
         }, {session: session});
         await auditData.save();
 

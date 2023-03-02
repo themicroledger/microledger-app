@@ -5,7 +5,7 @@ const helper = require("../../../helper/helper");
 const logger = require('../../../helper/logger');
 const br = helper.baseResponse;
 const router = new express.Router();
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const IbAssetClassModel = require('../../../models/configIbAssetClassModel');
 const PortfolioTypeModel = require('../../../models/configPortfolioTypeModel');
 const AbFrameworkModel = require('../../../models/configAbFrameworkModel');
@@ -117,7 +117,7 @@ router.post("/add", authUser, accountingTreatmentLookupMiddleware.canCreate, (re
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, accountingTreatmentLookupMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, accountingTreatmentLookupMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
     await processBulkInsert(req, res, 'Accounting Treatment Lookup', insertData);
 });
 
@@ -608,7 +608,7 @@ router.put("/update/:id", authUser, accountingTreatmentLookupMiddleware.canUpdat
                     actionItemId: configItemDetails._id,
                     action: helper.sysConst.permissionAccessTypes.EDIT,
                     actionDate: new Date(),
-                    actionBy: configItemDetails.createdByUser,
+                    actionBy: req.appCurrentUserData._id,
                 }, {session: session});
                 await auditData.save();
 
@@ -695,7 +695,7 @@ router.get("/get-all", authUser, accountingTreatmentLookupMiddleware.canRead, as
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.atlId = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 
@@ -811,7 +811,7 @@ router.delete("/delete/:id", authUser, accountingTreatmentLookupMiddleware.canDe
             actionItemId: configItemDetails._id,
             action: helper.sysConst.permissionAccessTypes.DELETE,
             actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
+            actionBy: req.appCurrentUserData._id,
         }, {session: session});
         await auditData.save();
 

@@ -4,7 +4,7 @@ const helper = require("../../../helper/helper");
 const logger = require('../../../helper/logger');
 const br = helper.baseResponse;
 const router = new express.Router();
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const CalenderOrBankHolidayModel = require('../../../models/configCalenderOrBankHolidayModel');
 const CurrencyModel = require('../../../models/configCurrencyModel');
 const RefRateDescModel = require('../../../models/configReferenceRatesDescriptionModel');
@@ -45,7 +45,7 @@ const refRateDescMiddleware = require('../../../middleware/config_reference_rate
  *                              default: 0
  *                          termLength:
  *                              type: string
- *                              default: Day
+ *                              default: Days
  *                              enum: [Month, Years, Days]
  *                          marketIdentifier:
  *                              type: string
@@ -95,7 +95,7 @@ router.post("/add", authUser, refRateDescMiddleware.canCreate, (req, res) => {
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, refRateDescMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, refRateDescMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
     await processBulkInsert(req, res, 'Reference Rate Description', insertData);
 });
 
@@ -104,9 +104,9 @@ function insertData(req, inputData, counter = 0, callback, onError) {
         bankHoliday: 'required|string',
         currency: 'required|string',
         referenceRate: 'required|string',
-        termLength: 'required|integer',
+        termLength: 'required|string',
         referenceRateName: 'required|string',
-        termUnit: 'required|string',
+        termUnit: 'required|integer',
         marketIdentifier: 'string',
         pricingSource: 'string',
         rateConvention: 'required|string',
@@ -123,8 +123,8 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                     currency: inputData.currency.toString().trim(),
                     referenceRate: inputData.referenceRate.toString().trim(),
                     referenceRateName: inputData.referenceRateName.toString().trim(),
-                    termLength: parseInt(inputData.termLength.toString().trim()),
-                    termUnit: inputData.termUnit.toString().trim(),
+                    termLength: inputData.termLength.toString().trim(),
+                    termUnit: parseInt(inputData.termUnit.toString().trim()),
                     marketIdentifier: inputData.marketIdentifier !== undefined ? inputData.marketIdentifier.toString().trim() : '',
                     pricingSource: inputData.pricingSource !== undefined ? inputData.pricingSource.toString().trim() : '',
                     rateConvention: inputData.rateConvention.toString().trim(),
@@ -151,6 +151,14 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                     if (itemDetails.length === 0) {
                         return callback(counter, false, 'Invalid Currency Id for currency => ' + data.currency + '!');
                     }
+                }
+
+                if(!helper.isObjectContainsKey(helper.sysConst.referenceTermLength, data.termLength)){
+                    return callback(counter, false, 'Invalid termLength!');
+                }
+
+                if(!helper.isObjectContainsKey(helper.sysConst.referenceRateConvention, data.rateConvention)){
+                    return callback(counter, false, 'Invalid rateConvention!');
                 }
 
                 const configFind = await RefRateDescModel.find({
@@ -263,7 +271,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
  *                              default: 0
  *                          termLength:
  *                              type: string
- *                              default: Day
+ *                              default: Days
  *                              enum: [Month, Years, Days]
  *                          marketIdentifier:
  *                              type: string
@@ -349,12 +357,16 @@ router.put("/update/:id", authUser, refRateDescMiddleware.canUpdate, isValidPara
                     data.referenceRateName = req.body.referenceRateName.toString().trim();
                 }
 
-                if (req.body.termLength !== undefined) {
-                    data.termLength = parseInt(req.body.termLength);
+                if (req.body.termUnit !== undefined) {
+                    data.termUnit = parseInt(req.body.termUnit);
                 }
 
-                if (req.body.termUnit !== undefined && helper.isObjectContainsKey(helper.sysConst.referenceTermUnit, req.body.termUnit)) {
-                    data.termUnit = req.body.termUnit.toString().trim();
+                if (req.body.termLength !== undefined) {
+                    data.termLength = req.body.termLength.toString().trim();
+
+                    if(!helper.isObjectContainsKey(helper.sysConst.referenceTermLength, data.termLength)){
+                        return br.sendNotSuccessful(res, 'Invalid termLength!');
+                    }
                 }
 
                 if (req.body.marketIdentifier !== undefined) {
@@ -365,8 +377,12 @@ router.put("/update/:id", authUser, refRateDescMiddleware.canUpdate, isValidPara
                     data.pricingSource = req.body.pricingSource.toString().trim();
                 }
 
-                if (req.body.rateConvention !== undefined && helper.isObjectContainsKey(helper.sysConst.referenceRateConvention, req.body.rateConvention)) {
+                if (req.body.rateConvention !== undefined) {
                     data.rateConvention = req.body.rateConvention.toString().trim();
+
+                    if(!helper.isObjectContainsKey(helper.sysConst.referenceRateConvention, data.rateConvention)){
+                        return br.sendNotSuccessful(res, 'Invalid rateConvention!');
+                    }
                 }
 
                 let configFind = await RefRateDescModel.find({
@@ -432,7 +448,7 @@ router.put("/update/:id", authUser, refRateDescMiddleware.canUpdate, isValidPara
                     actionItemId: configItemDetails._id,
                     action: helper.sysConst.permissionAccessTypes.EDIT,
                     actionDate: new Date(),
-                    actionBy: configItemDetails.createdByUser,
+                    actionBy: req.appCurrentUserData._id,
                 }, {session: session});
                 await auditData.save();
 
@@ -513,7 +529,7 @@ router.get("/get-all", authUser, refRateDescMiddleware.canRead, async (req, res)
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.referenceRateName = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 
@@ -623,7 +639,7 @@ router.delete("/delete/:id", authUser, refRateDescMiddleware.canDelete, isValidP
             actionItemId: configItemDetails._id,
             action: helper.sysConst.permissionAccessTypes.DELETE,
             actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
+            actionBy: req.appCurrentUserData._id,
         }, {session: session});
         await auditData.save();
 

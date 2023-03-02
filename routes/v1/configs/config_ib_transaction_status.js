@@ -4,7 +4,7 @@ const helper = require("../../../helper/helper");
 const br = helper.baseResponse;
 const router = new express.Router();
 const json2csv = require('json2csv').parse;
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const {processBulkInsert} = require('../helper/process_bulk_insert');
 const IbTransactionStatusModel = require('../../../models/configIbTransactionStatusModel');
 const IbTransactionStatusAuditModel = require('../../../models/configIbTransactionStatusAuditModel');
@@ -68,7 +68,7 @@ router.post("/add", authUser, ibTransactionStatusMiddleware.canCreate, (req, res
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, ibTransactionStatusMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, ibTransactionStatusMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
   await processBulkInsert(req, res, 'Security Group', insertData);
 });
 
@@ -111,7 +111,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
           actionItemId: ib._id,
           action: helper.sysConst.permissionAccessTypes.CREATE,
           actionDate: new Date(),
-          actionBy: ib.createdByUser,
+          actionBy: req.appCurrentUserData._id,
         }, { session: session });
         await auditData.save();
 
@@ -216,14 +216,13 @@ router.put("/update/:id", authUser, ibTransactionStatusMiddleware.canUpdate, isV
           actionItemId: assetDetails._id,
           action: helper.sysConst.permissionAccessTypes.EDIT,
           actionDate: new Date(),
-          actionBy: assetDetails.createdByUser,
+          actionBy: req.appCurrentUserData._id,
         }, { session: session });
         await auditData.save();
 
         await session.commitTransaction();
 
         br.sendSuccess(res, assetDetails, 'Ib Transaction Status updated successfully!');
-        //res.send([req.appCurrentUserData, req.appCurrentUserPermissions]);
       } catch (error) {
         if(session.inTransaction()){
           await session.abortTransaction();
@@ -289,7 +288,7 @@ router.get("/get-all", authUser, ibTransactionStatusMiddleware.canRead, async (r
 
     if(req.query.search !== undefined && req.query.search.length > 0){
       filter.transactionStatus = {
-        $regex: '/^' + req.query.search + '/i',
+        $regex: new RegExp('^' + req.query.search, 'i'),
       }
     }
 
@@ -387,7 +386,7 @@ router.delete("/delete/:id", authUser, ibTransactionStatusMiddleware.canDelete, 
       actionItemId: assetDetails._id,
       action: helper.sysConst.permissionAccessTypes.DELETE,
       actionDate: new Date(),
-      actionBy: assetDetails.createdByUser,
+      actionBy: req.appCurrentUserData._id,
     }, { session: session });
     await auditData.save();
 

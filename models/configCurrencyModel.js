@@ -12,7 +12,7 @@ const configSecurityGroupSchema = new mongoose.Schema({
     bankHolidays: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        ref : "config_calender_or_bank_holiday_rule_audits"
+        ref : "config_calender_or_bank_holiday_rules"
     },
     settlementDays : {
         type: Number,

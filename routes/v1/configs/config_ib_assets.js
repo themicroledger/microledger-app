@@ -4,7 +4,7 @@ const router = new express.Router();
 const json2csv = require('json2csv').parse;
 const helper = require("../../../helper/helper");
 const br = helper.baseResponse;
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const IbAssetClassModel = require('../../../models/configIbAssetClassModel');
 const IbAssetClassAuditModel = require('../../../models/configIbAssetClassAuditModel');
 const {processBulkInsert} = require('../helper/process_bulk_insert');
@@ -71,7 +71,7 @@ router.post("/add", authUser, ibAssetMiddleware.canCreate, (req, res) => {
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, ibAssetMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, ibAssetMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
     await processBulkInsert(req, res, 'Ib Asset', insertData);
 });
 
@@ -119,7 +119,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                     actionItemId: ib._id,
                     action: helper.sysConst.permissionAccessTypes.CREATE,
                     actionDate: new Date(),
-                    actionBy: ib.createdByUser,
+                    actionBy: req.appCurrentUserData._id,
                 }, {session: session});
                 await auditData.save();
 
@@ -231,7 +231,7 @@ router.put("/update/:id", authUser, ibAssetMiddleware.canUpdate, isValidParamId,
                     actionItemId: assetDetails._id,
                     action: helper.sysConst.permissionAccessTypes.EDIT,
                     actionDate: new Date(),
-                    actionBy: assetDetails.createdByUser,
+                    actionBy: req.appCurrentUserData._id,
                 }, {session: session});
                 await auditData.save();
 
@@ -306,7 +306,7 @@ router.get("/get-all", authUser, ibAssetMiddleware.canRead, async (req, res) => 
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.assetClass = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 
@@ -404,7 +404,7 @@ router.delete("/delete/:id", authUser, ibAssetMiddleware.canDelete, isValidParam
             actionItemId: assetDetails._id,
             action: helper.sysConst.permissionAccessTypes.DELETE,
             actionDate: new Date(),
-            actionBy: assetDetails.createdByUser,
+            actionBy: req.appCurrentUserData._id,
         }, {session: session});
         await auditData.save();
 

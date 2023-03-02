@@ -1,6 +1,6 @@
 const JWT = require("jsonwebtoken");
-const User = require("../models/user.model");
-const Token = require("../models/token.model");
+const User = require("../models/userModel");
+const ResetToken = require("../models/resetTokenModel");
 const sendEmail = require("../helper/email/sendEmail");
 const crypto = require("crypto");
 const bcrypt = require("bcrypt");
@@ -24,26 +24,27 @@ const signup = async (data) => {
 const requestPasswordReset = async (email) => {
 
     const user = await User.findOne({ email });
-
+    let clientURL = process.env[`APP_HOME_URL_${process.env.APP_ENV_MODE}`];
     if (!user) throw new Error("User does not exist");
-    let token = await Token.findOne({ userId: user._id });
+    let token = await ResetToken.findOne({ userId: user._id });
     if (token) await token.deleteOne();
     let resetToken = crypto.randomBytes(32).toString("hex");
     const hash = await bcrypt.hash(resetToken, Number(bcryptSalt));
 
-    await new Token({
+    await new ResetToken({
         userId: user._id,
         token: hash,
-        createdAt: Date.now(),
+        expiredAt: new Date(Date.now() + (4*1000*3600)),
+        createdAt: new Date.now(),
     }).save();
 
-    const link = `${clientURL}/passwordReset?token=${resetToken}&id=${user._id}`;
-    sendEmail(user.email,"Password Reset Request",{name: user.name,link: link,},"./template/requestResetPassword.handlebars");
+    const link = `${clientURL}/passwordReset?token=${resetToken}&email=${user.email}`;
+    await sendEmail.sendPasswordResetEmail(user.email, link);
     return link;
 };
 
 const resetPassword = async (userId, token, password) => {
-    let passwordResetToken = await Token.findOne({ userId });
+    let passwordResetToken = await ResetToken.findOne({ userId });
     if (!passwordResetToken) {
         throw new Error("Invalid or expired password reset token");
     }
@@ -58,13 +59,10 @@ const resetPassword = async (userId, token, password) => {
         { new: true }
     );
     const user = await User.findById({ _id: userId });
-    sendEmail(
+    sendEmail.passwordResetCompletedEmail(
         user.email,
         "Password Reset Successfully",
-        {
-            name: user.name,
-        },
-        "./template/resetPassword.handlebars"
+        user.email
     );
     await passwordResetToken.deleteOne();
     return true;

@@ -21,14 +21,14 @@ const configReferenceRatesDescriptionSchema = new mongoose.Schema({
         required: true
     },
     termLength : {
+        type: String,
+        required: true,
+        enum: sysConst.referenceTermLength
+    },
+    termUnit : {
         type: Number,
         required: true,
         default: 0
-    },
-    termUnit : {
-        type: String,
-        required: true,
-        enum: sysConst.referenceTermUnit
     },
     marketIdentifier : {
         type: String

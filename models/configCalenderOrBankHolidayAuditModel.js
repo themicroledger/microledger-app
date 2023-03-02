@@ -10,7 +10,7 @@ const configCalenderOrBankHolidayAuditSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    Country : {
+    country : {
         type: String,
         required: true
     },
@@ -84,7 +84,7 @@ const configCalenderOrBankHolidayAuditSchema = new mongoose.Schema({
     },
     actionItemId:{
         type: mongoose.Schema.Types.ObjectId,
-        ref : "config_cost_basis_rules"
+        ref : "config_calender_or_bank_holiday_rules"
     },
     action: {
         type: String,

@@ -5,7 +5,7 @@ const helper = require("../../../helper/helper");
 const logger = require('../../../helper/logger');
 const br = helper.baseResponse;
 const router = new express.Router();
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const IbAssetModel = require('../../../models/configIbAssetClassModel');
 const TransactionCodeModel = require('../../../models/configTransactionCodeModel');
 const TransactionCodeAuditModel = require('../../../models/configTransactionCodeAuditModel');
@@ -96,7 +96,7 @@ router.post("/add", authUser, transactionCodeMiddleware.canCreate, (req, res) =>
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, transactionCodeMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, transactionCodeMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
     await processBulkInsert(req, res, 'Transaction Code', insertData);
 });
 
@@ -313,7 +313,7 @@ router.put("/update/:id", authUser, transactionCodeMiddleware.canUpdate, isValid
                 }
 
                 if (req.body.lifeCyclePeriodType !== undefined) {
-                    data.lifeCyclePeriodType = moment(req.body.lifeCyclePeriodType);
+                    data.lifeCyclePeriodType = req.body.lifeCyclePeriodType.toString().trim();
 
                     if(!helper.isObjectContainsKey(helper.sysConst.transactionCodeLifeCyclePeriodTypes, data.lifeCyclePeriodType)){
                         return br.sendNotSuccessful(res,'lifeCyclePeriodType is not valid!');
@@ -340,7 +340,7 @@ router.put("/update/:id", authUser, transactionCodeMiddleware.canUpdate, isValid
                 }
 
                 if (req.body.transactionLevel !== undefined) {
-                    data.transactionLevel = moment(req.body.transactionLevel);
+                    data.transactionLevel = req.body.transactionLevel.toString().trim();
 
                     if(!helper.isObjectContainsKey(helper.sysConst.transactionCodeTransactionLevels, data.transactionLevel)){
                         return br.sendNotSuccessful(res,'transactionLevel is not valid!');
@@ -417,7 +417,7 @@ router.put("/update/:id", authUser, transactionCodeMiddleware.canUpdate, isValid
                     actionItemId: configItemDetails._id,
                     action: helper.sysConst.permissionAccessTypes.EDIT,
                     actionDate: new Date(),
-                    actionBy: configItemDetails.createdByUser,
+                    actionBy: req.appCurrentUserData._id,
                 }, {session: session});
                 await auditData.save();
 
@@ -499,7 +499,7 @@ router.get("/get-all", authUser, transactionCodeMiddleware.canRead, async (req, 
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.businessEvent = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 
@@ -610,7 +610,7 @@ router.delete("/delete/:id", authUser, transactionCodeMiddleware.canDelete, isVa
             actionItemId: configItemDetails._id,
             action: helper.sysConst.permissionAccessTypes.DELETE,
             actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
+            actionBy: req.appCurrentUserData._id,
         }, {session: session});
         await auditData.save();
 

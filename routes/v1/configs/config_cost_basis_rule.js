@@ -5,7 +5,7 @@ const logger = require('../../../helper/logger');
 const br = helper.baseResponse;
 const router = new express.Router();
 const json2csv = require('json2csv').parse;
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const {processBulkInsert} = require('../helper/process_bulk_insert');
 const costBasisRuleModel = require('../../../models/configCostBasisRuleModel');
 const costBasisRuleAuditModel = require('../../../models/configCostBasisRuleAuditModel');
@@ -81,7 +81,7 @@ router.post("/add", authUser, costBasisRuleMiddleware.canCreate, (req, res) => {
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, costBasisRuleMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, costBasisRuleMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
     await processBulkInsert(req, res, 'Cost Basis Rule', insertData);
 });
 
@@ -326,7 +326,7 @@ router.put("/update/:id", authUser, costBasisRuleMiddleware.canUpdate, isValidPa
                     actionItemId: configItemDetails._id,
                     action: helper.sysConst.permissionAccessTypes.EDIT,
                     actionDate: new Date(),
-                    actionBy: configItemDetails.createdByUser,
+                    actionBy: req.appCurrentUserData._id,
                 }, {session: session});
                 await auditData.save();
 
@@ -403,7 +403,7 @@ router.get("/get-all", authUser, costBasisRuleMiddleware.canRead, async (req, re
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.costBasisProfileName = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 
@@ -506,7 +506,7 @@ router.delete("/delete/:id", authUser, costBasisRuleMiddleware.canDelete, isVali
             actionItemId: configItemDetails._id,
             action: helper.sysConst.permissionAccessTypes.DELETE,
             actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
+            actionBy: req.appCurrentUserData._id,
         }, {session: session});
         await auditData.save();
 

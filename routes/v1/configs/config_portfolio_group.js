@@ -4,7 +4,7 @@ const helper = require("../../../helper/helper");
 const logger = require('../../../helper/logger');
 const br = helper.baseResponse;
 const router = new express.Router();
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const PortfolioTypeModel = require('../../../models/configPortfolioTypeModel');
 const IbCompanyModel = require('../../../models/configIbCompanyModel');
 const CurrencyModel = require('../../../models/configCurrencyModel');
@@ -91,7 +91,7 @@ router.post("/add", authUser, portfolioGroupMiddleware.canCreate, (req, res) => 
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, portfolioGroupMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, portfolioGroupMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
     await processBulkInsert(req, res, 'Portfolio Group', insertData);
 });
 
@@ -313,7 +313,7 @@ router.put("/update/:id", authUser, portfolioGroupMiddleware.canUpdate, isValidP
                 }
 
                 if (req.body.portfolioGroupType !== undefined) {
-                    data.portfolioGroup = req.body.portfolioGroupType.toString().trim();
+                    data.portfolioGroupType = req.body.portfolioGroupType.toString().trim();
 
                     if (!helper.isValidObjectId(data.portfolioGroupType)) {
                         return br.sendNotSuccessful(res, 'portfolioGroupType is not a valid Portfolio Type Id!');
@@ -322,13 +322,13 @@ router.put("/update/:id", authUser, portfolioGroupMiddleware.canUpdate, isValidP
                             .find({_id: data.portfolioGroupType, isDeleted: false,});
 
                         if (itemDetails.length === 0) {
-                            return br.sendNotSuccessful(res, 'Invalid Portfolio Group Id for portfolioGroupType => ' + data.portfolioGroupType + '!');
+                            return br.sendNotSuccessful(res, 'Invalid Portfolio Type Id for portfolioGroupType => ' + data.portfolioGroupType + '!');
                         }
                     }
                 }
 
                 if (req.body.company !== undefined) {
-                    data.portfolioGroup = req.body.company.toString().trim();
+                    data.company = req.body.company.toString().trim();
 
                     if (!helper.isValidObjectId(data.company)) {
                         return br.sendNotSuccessful(res, 'company is not a valid Ib Company Id!');
@@ -392,7 +392,7 @@ router.put("/update/:id", authUser, portfolioGroupMiddleware.canUpdate, isValidP
                         + '` and Name => `'
                         + configFind[0].name
                         + '` and Portfolio Type => `'
-                        + configFind[0].portfolioGroupType.name
+                        + configFind[0].portfolioGroupType.portfolioType
                         + '` and Company => `'
                         + configFind[0].company.name + ' !',
                         {});
@@ -426,7 +426,7 @@ router.put("/update/:id", authUser, portfolioGroupMiddleware.canUpdate, isValidP
                     actionItemId: configItemDetails._id,
                     action: helper.sysConst.permissionAccessTypes.EDIT,
                     actionDate: new Date(),
-                    actionBy: configItemDetails.createdByUser,
+                    actionBy: req.appCurrentUserData._id,
                 }, {session: session});
                 await auditData.save();
 
@@ -506,7 +506,7 @@ router.get("/get-all", authUser, portfolioGroupMiddleware.canRead, async (req, r
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.name = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 
@@ -615,7 +615,7 @@ router.delete("/delete/:id", authUser, portfolioGroupMiddleware.canDelete, isVal
             actionItemId: configItemDetails._id,
             action: helper.sysConst.permissionAccessTypes.DELETE,
             actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
+            actionBy: req.appCurrentUserData._id,
         }, {session: session});
         await auditData.save();
 
