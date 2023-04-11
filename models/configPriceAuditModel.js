@@ -5,9 +5,6 @@ const accessTypes = sysConst.permissionAccessTypes;
 const configPriceAuditSchema = new mongoose.Schema({
     slNo : {
         type: Number,
-        unique: true,
-        min: 1,
-        required: true
     },
     securityId : {
         type: String,

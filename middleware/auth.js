@@ -9,7 +9,7 @@ const authUser = (req, res, next) => {
     if(!req.headers.authorization) {
       return res.status(401).send(br.withError("Authentication failed"));
     }
-    const token = req.headers.authorization?.split(" ")[1];
+    const token = req.headers.authorization.split(" ")[1];
     helper.verifyToken(token,(err, data) => {
       if(err){
         console.log('Unauthenticated token!');

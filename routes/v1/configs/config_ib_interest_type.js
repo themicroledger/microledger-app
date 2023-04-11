@@ -5,7 +5,7 @@ const logger = require('../../../helper/logger');
 const br = helper.baseResponse;
 const router = new express.Router();
 const json2csv = require('json2csv').parse;
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const IbAssetClassModel = require('../../../models/configIbAssetClassModel');
 const IbInterestTypeModel = require('../../../models/configIbInterestTypeModel');
 const IbInterestTypeAuditModel = require('../../../models/configIbInterestTypeAuditModel');
@@ -73,7 +73,7 @@ router.post("/add", authUser, ibInterestTypeMiddleware.canCreate, (req, res) => 
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, ibInterestTypeMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, ibInterestTypeMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
     await processBulkInsert(req, res, 'Ib Interest', insertData);
 });
 
@@ -265,14 +265,13 @@ router.put("/update/:id", authUser, ibInterestTypeMiddleware.canUpdate, isValidP
                     actionItemId: configItemDetails._id,
                     action: helper.sysConst.permissionAccessTypes.EDIT,
                     actionDate: new Date(),
-                    actionBy: configItemDetails.createdByUser,
+                    actionBy: req.appCurrentUserData._id,
                 }, {session: session});
                 await auditData.save();
 
                 await session.commitTransaction();
 
                 br.sendSuccess(res, configItemDetails, 'Ib Interest Type updated successfully!');
-                //res.send([req.appCurrentUserData, req.appCurrentUserPermissions]);
             } catch (error) {
                 if (session.inTransaction()) {
                     await session.abortTransaction();
@@ -339,7 +338,7 @@ router.get("/get-all", authUser, ibInterestTypeMiddleware.canRead, async (req, r
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.interestTypeName = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 
@@ -437,7 +436,7 @@ router.delete("/delete/:id", authUser, ibInterestTypeMiddleware.canDelete, isVal
             actionItemId: configItemDetails._id,
             action: helper.sysConst.permissionAccessTypes.DELETE,
             actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
+            actionBy: req.appCurrentUserData._id,
         }, {session: session});
         await auditData.save();
 

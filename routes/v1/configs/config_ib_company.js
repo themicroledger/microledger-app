@@ -4,7 +4,7 @@ const helper = require("../../../helper/helper");
 const logger = require('../../../helper/logger');
 const br = helper.baseResponse;
 const router = new express.Router();
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const IbParty = require('../../../models/configIbPartyModel');
 const IbCompanyModel = require('../../../models/configIbCompanyModel');
 const IbCompanyAuditModel = require('../../../models/configIbCompanyAuditModel');
@@ -101,7 +101,7 @@ router.post("/add", authUser, ibCompanyMiddleware.canCreate, (req, res) => {
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, ibCompanyMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, ibCompanyMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
     await processBulkInsert(req, res, 'Ib Company', insertData);
 });
 
@@ -341,7 +341,7 @@ router.put("/update/:id", authUser, ibCompanyMiddleware.canUpdate, isValidParamI
                         return br.sendNotSuccessful(res, 'party is not a valid Ib Party Id!');
                     } else {
                         const itemDetails = await IbParty
-                            .find({_id: data.company, isDeleted: false,});
+                            .find({_id: data.party, isDeleted: false,});
 
                         if (itemDetails.length === 0) {
                             return br.sendNotSuccessful(res, 'Invalid Ib Party Id for party => ' + data.party + '!');
@@ -444,7 +444,7 @@ router.put("/update/:id", authUser, ibCompanyMiddleware.canUpdate, isValidParamI
                     actionItemId: configItemDetails._id,
                     action: helper.sysConst.permissionAccessTypes.EDIT,
                     actionDate: new Date(),
-                    actionBy: configItemDetails.createdByUser,
+                    actionBy: req.appCurrentUserData._id,
                 }, {session: session});
                 await auditData.save();
 
@@ -528,7 +528,7 @@ router.get("/get-all", authUser, ibCompanyMiddleware.canRead, async (req, res) =
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.name = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 
@@ -641,7 +641,7 @@ router.delete("/delete/:id", authUser, ibCompanyMiddleware.canDelete, isValidPar
             actionItemId: configItemDetails._id,
             action: helper.sysConst.permissionAccessTypes.DELETE,
             actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
+            actionBy: req.appCurrentUserData._id,
         }, {session: session});
         await auditData.save();
 

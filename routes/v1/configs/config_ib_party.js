@@ -5,7 +5,7 @@ const logger = require('../../../helper/logger');
 const br = helper.baseResponse;
 const router = new express.Router();
 const json2csv = require('json2csv').parse;
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const {processBulkInsert} = require('../helper/process_bulk_insert');
 const CurrencyModel = require('../../../models/configCurrencyModel');
 const IbPartyModel = require('../../../models/configIbPartyModel');
@@ -101,6 +101,17 @@ const ibPartyMiddleware = require('../../../middleware/config_ib_party_middlewar
  *                          isItAsset:
  *                              type: bool
  *                              default: false
+ *                          additionPartyData:
+ *                              type: array
+ *                              items:
+ *                                  type: object
+ *                                  properties:
+ *                                      name:
+ *                                          type: String
+ *                                          default: additional field 1
+ *                                      value:
+ *                                          type: String
+ *                                          default: field value
  *      responses:
  *          200:
  *              description: Success
@@ -141,7 +152,7 @@ router.post("/add", authUser, ibPartyMiddleware.canCreate, (req, res) => {
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, ibPartyMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, ibPartyMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
     await processBulkInsert(req, res, 'Ib Party', insertData);
 });
 
@@ -205,6 +216,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                     currency: inputData.currency !== undefined && inputData.currency !== null && inputData.currency.length > 0 ? inputData.currency.toString().trim() : null,
                     fromDate: inputData.fromDate !== undefined ? new Date(inputData.fromDate) : null,
                     isItAsset: inputData.isItAsset !== undefined ? helper.getBoolean(inputData.isItAsset) : false,
+                    additionPartyData: []
                 };
 
                 const configFind = await IbPartyModel.find({
@@ -247,6 +259,19 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                     }
                 }
 
+                if(inputData.additionPartyData !== undefined && Array.isArray(inputData.additionPartyData)){
+                    let additionalData = [];
+                    inputData.additionPartyData.forEach((item) => {
+                        if(item.name !== undefined && item.value !== undefined){
+                            additionalData.push({
+                                name: item.name,
+                                value: item.value
+                            });
+                        }
+                    });
+                    data.additionPartyData = additionalData;
+                }
+
                 await session.startTransaction();
 
                 const ib = new IbPartyModel({
@@ -274,6 +299,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                     currency: data.currency,
                     fromDate: data.fromDate,
                     isItAsset: data.isItAsset,
+                    additionPartyData: data.additionPartyData,
                     createdByUser: req.appCurrentUserData._id,
                 }, {session: session});
                 await ib.save();
@@ -303,6 +329,7 @@ function insertData(req, inputData, counter = 0, callback, onError) {
                     currency: ib.currency,
                     fromDate: ib.fromDate,
                     isItAsset: ib.isItAsset,
+                    additionPartyData: ib.additionPartyData,
                     changedByUser: ib.changedByUser,
                     changedDate: ib.changedDate,
                     createdByUser: ib.createdByUser,
@@ -671,7 +698,7 @@ router.put("/update/:id", authUser, ibPartyMiddleware.canUpdate, isValidParamId,
                     actionItemId: configItemDetails._id,
                     action: helper.sysConst.permissionAccessTypes.EDIT,
                     actionDate: new Date(),
-                    actionBy: configItemDetails.createdByUser,
+                    actionBy: req.appCurrentUserData._id,
                 }, {session: session});
                 await auditData.save();
 
@@ -767,7 +794,7 @@ router.get("/get-all", authUser, ibPartyMiddleware.canRead, async (req, res) => 
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.name = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 
@@ -889,7 +916,7 @@ router.delete("/delete/:id", authUser, ibPartyMiddleware.canDelete, isValidParam
             actionItemId: configItemDetails._id,
             action: helper.sysConst.permissionAccessTypes.DELETE,
             actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
+            actionBy: req.appCurrentUserData._id,
         }, {session: session});
         await auditData.save();
 

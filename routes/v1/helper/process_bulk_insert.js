@@ -77,29 +77,31 @@ module.exports = {
                                     processStatus: helper.sysConst.processStatus.PartiallyDone,
                                     changedByUser: req.appCurrentUserData._id,
                                     changedDate: new Date(),
-                                    data: {
+                                    processData: {
                                         logFilePath: helper.getAppBaseUrl() + logFileName.replace(__appBaseDir + '/public/', ''),
                                         successCount: successCount,
                                         errorCount: errorCount
                                     }
                                 }
                                 await ProcessRequestModel.updateOne({_id: process._id}, upData);
-                                upData.data.processDetails = await ProcessRequestModel.findById(process._id);
+                                let processDetails = upData.processData;
+                                processDetails.processDetails = await ProcessRequestModel.findById(process._id);
                                 br.sendSuccess(res, upData.data, 'Bulk Insert Completed! some items got skipped => see the log file to know more!');
                             } else {
                                 let upData = {
                                     processStatus: helper.sysConst.processStatus.Done,
                                     changedByUser: req.appCurrentUserData._id,
                                     changedDate: new Date(),
-                                    data: {
+                                    processData: {
                                         logFilePath: helper.getAppBaseUrl() + logFileName.replace(__appBaseDir + '/public/', ''),
                                         successCount: successCount,
                                         errorCount: errorCount
                                     }
                                 }
                                 await ProcessRequestModel.updateOne({_id: process._id}, upData);
-                                upData.data.processDetails = await ProcessRequestModel.findById(process._id);
-                                br.sendSuccess(res, upData.data, 'Bulk Insert Completed Successfully!');
+                                let processDetails = upData.processData;
+                                processDetails.processDetails = await ProcessRequestModel.findById(process._id);
+                                br.sendSuccess(res, processDetails, 'Bulk Insert Completed Successfully!');
                             }
                             console.log(i, ' => ','Process Done!');
                         }).catch(async e => {

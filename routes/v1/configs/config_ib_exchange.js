@@ -4,7 +4,7 @@ const helper = require("../../../helper/helper");
 const logger = require('../../../helper/logger');
 const br = helper.baseResponse;
 const router = new express.Router();
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const HolidayModel = require('../../../models/configCalenderOrBankHolidayModel');
 const IbExchangeModel = require('../../../models/configIbExchangeModel');
 const IbExchangeAuditModel = require('../../../models/configIbExchangeAuditModel');
@@ -103,7 +103,7 @@ router.post("/add", authUser, ibExchangeMiddleware.canCreate, (req, res) => {
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, ibExchangeMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, ibExchangeMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
     await processBulkInsert(req, res, 'Ib Exchange', insertData);
 });
 
@@ -370,7 +370,16 @@ router.put("/update/:id", authUser, ibExchangeMiddleware.canUpdate, isValidParam
                 }
 
                 if (req.body.exchangeClientSpecificCodes !== undefined && Array.isArray(req.body.exchangeClientSpecificCodes)) {
-                    data.exchangeClientSpecificCodes = req.body.exchangeClientSpecificCodes;
+                    let codes = [];
+                    data.exchangeClientSpecificCodes.forEach((item) => {
+                        if(item.key !== undefined && item.val !== undefined){
+                            codes.push({
+                                key: item.key,
+                                val: item.val
+                            });
+                        }
+                    });
+                    data.exchangeClientSpecificCodes = codes;
                 }
 
                 let configFind = await IbExchangeModel.find({
@@ -432,7 +441,7 @@ router.put("/update/:id", authUser, ibExchangeMiddleware.canUpdate, isValidParam
                     actionItemId: configItemDetails._id,
                     action: helper.sysConst.permissionAccessTypes.EDIT,
                     actionDate: new Date(),
-                    actionBy: configItemDetails.createdByUser,
+                    actionBy: req.appCurrentUserData._id,
                 }, {session: session});
                 await auditData.save();
 
@@ -514,8 +523,42 @@ router.get("/get-all", authUser, ibExchangeMiddleware.canRead, async (req, res) 
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.name = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
+        }
+
+        let assets = await IbExchangeModel.find(filter).populate('holidayCalender');
+        br.sendSuccess(res, assets);
+    } catch (error) {
+        logger.error(error);
+        br.sendServerError(res, {});
+    }
+});
+
+/**
+ * @swagger
+ * /api/v1/config/ib-exchange/get-all/for/holiday-calender/{id}:
+ *  get:
+ *      summary: Get all Ib Exchange got any Holiday Calender
+ *      tags: [Config-Ib Exchange]
+ *      parameters:
+ *      - name: id
+ *        in: path
+ *        description: Bank Calender Holiday Id
+ *        default: 6287f9cc5f9120bbbbc36f59
+ *      responses:
+ *          200:
+ *              description: Success
+ *          default:
+ *              description: Default response for this api
+ */
+router.get("/get-all/for/holiday-calender/:id", authUser, ibExchangeMiddleware.canRead, isValidParamId, async (req, res) => {
+    try {
+        const id = req.validParamId;
+
+        let filter = {
+            holidayCalender: id,
+            isDeleted: false,
         }
 
         let assets = await IbExchangeModel.find(filter).populate('holidayCalender');
@@ -625,7 +668,7 @@ router.delete("/delete/:id", authUser, ibExchangeMiddleware.canDelete, isValidPa
             actionItemId: configItemDetails._id,
             action: helper.sysConst.permissionAccessTypes.DELETE,
             actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
+            actionBy: req.appCurrentUserData._id,
         }, {session: session});
         await auditData.save();
 

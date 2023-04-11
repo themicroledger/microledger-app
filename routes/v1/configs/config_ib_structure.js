@@ -5,7 +5,7 @@ const logger = require('../../../helper/logger');
 const br = helper.baseResponse;
 const router = new express.Router();
 const json2csv = require('json2csv').parse;
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const IbAssetClassModel = require('../../../models/configIbAssetClassModel');
 const IbAssetStructureModel = require('../../../models/configIbStructureModel');
 const IbAssetStructureAuditModel = require('../../../models/configIbStructureAuditModel');
@@ -73,7 +73,7 @@ router.post("/add", authUser, ibStructureMiddleware.canCreate, (req, res) => {
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, ibStructureMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, ibStructureMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
   await processBulkInsert(req, res, 'Ib Structure', insertData);
 });
 
@@ -258,7 +258,7 @@ router.put("/update/:id", authUser, ibStructureMiddleware.canUpdate, isValidPara
           actionItemId: structureDetails._id,
           action: helper.sysConst.permissionAccessTypes.EDIT,
           actionDate: new Date(),
-          actionBy: structureDetails.createdByUser,
+          actionBy: req.appCurrentUserData._id,
         }, { session: session });
         await auditData.save();
 
@@ -332,7 +332,7 @@ router.get("/get-all", authUser, ibStructureMiddleware.canRead, async (req, res)
 
     if(req.query.search !== undefined && req.query.search.length > 0){
       filter.instrumentStructure = {
-        $regex: '/^' + req.query.search + '/i',
+        $regex: new RegExp('^' + req.query.search, 'i'),
       }
     }
 
@@ -430,7 +430,7 @@ router.delete("/delete/:id", authUser, ibStructureMiddleware.canDelete, isValidP
       actionItemId: configItemDetails._id,
       action: helper.sysConst.permissionAccessTypes.DELETE,
       actionDate: new Date(),
-      actionBy: configItemDetails.createdByUser,
+      actionBy: req.appCurrentUserData._id,
     }, { session: session });
     await auditData.save();
 

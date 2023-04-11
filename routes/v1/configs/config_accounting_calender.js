@@ -5,7 +5,7 @@ const helper = require("../../../helper/helper");
 const logger = require('../../../helper/logger');
 const br = helper.baseResponse;
 const router = new express.Router();
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const AccountingCalenderModel = require('../../../models/configAccountingCalenderModel');
 const AccountingCalenderAuditModel = require('../../../models/configAccountingCalenderAuditModel');
 const {Validator} = require('node-input-validator');
@@ -90,7 +90,7 @@ router.post("/add", authUser, accountingCalenderMiddleware.canCreate, (req, res)
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, accountingCalenderMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, accountingCalenderMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
     await processBulkInsert(req, res, 'Accounting Calender', insertData);
 });
 
@@ -348,15 +348,12 @@ router.put("/update/:id", authUser, accountingCalenderMiddleware.canUpdate, isVa
                     _id: {
                         $nin: id
                     },
-                    id: data.id !== undefined
-                        ? data.id
-                        : configItem.securityId,
-                    name: data.name !== undefined
-                        ? data.name
-                        : configItem.name,
-                    holidayCalender: data.holidayCalender !== undefined
-                        ? data.holidayCalender
-                        : configItem.holidayCalender
+                    acId: data.acId !== undefined
+                        ? data.acId
+                        : configItem.acId,
+                    acName: data.acName !== undefined
+                        ? data.acName
+                        : configItem.acName
                 });
 
                 if (configFind.length > 0) {
@@ -399,7 +396,7 @@ router.put("/update/:id", authUser, accountingCalenderMiddleware.canUpdate, isVa
                     actionItemId: configItemDetails._id,
                     action: helper.sysConst.permissionAccessTypes.EDIT,
                     actionDate: new Date(),
-                    actionBy: configItemDetails.createdByUser,
+                    actionBy: req.appCurrentUserData._id,
                 }, {session: session});
                 await auditData.save();
 
@@ -479,7 +476,7 @@ router.get("/get-all", authUser, accountingCalenderMiddleware.canRead, async (re
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.acName = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 
@@ -588,7 +585,7 @@ router.delete("/delete/:id", authUser, accountingCalenderMiddleware.canDelete, i
             actionItemId: configItemDetails._id,
             action: helper.sysConst.permissionAccessTypes.DELETE,
             actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
+            actionBy: req.appCurrentUserData._id,
         }, {session: session});
         await auditData.save();
 

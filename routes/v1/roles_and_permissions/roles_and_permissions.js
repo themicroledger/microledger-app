@@ -1,6 +1,4 @@
 const express = require("express");
-const mongo = require('mongoose');
-const UserModel = require("../../../models/userModel");
 const RoleModel = require("../../../models/roleModel");
 const PermissionModel = require("../../../models/permissionModel");
 const helper = require("../../../helper/helper");
@@ -164,6 +162,12 @@ const allPer = {
         {name: 'CONFIG_LEDGER_PERIOD_CONTROL_EDIT', accessType: accessTypes.READ},
         {name: 'CONFIG_LEDGER_PERIOD_CONTROL_READ', accessType: accessTypes.EDIT},
         {name: 'CONFIG_LEDGER_PERIOD_CONTROL_DELETE', accessType: accessTypes.DELETE,}
+    ],
+   bondSecurity: [
+        {name: 'BOND_SECURITY_CREATE', accessType: accessTypes.CREATE},
+        {name: 'BOND_SECURITY_EDIT', accessType: accessTypes.READ},
+        {name: 'BOND_SECURITY_READ', accessType: accessTypes.EDIT},
+        {name: 'BOND_SECURITY_DELETE', accessType: accessTypes.DELETE,}
     ]
 };
 
@@ -212,7 +216,8 @@ router.get("/seed", async (req, res) => {
             ...allPer.configLedgerLookup,
             ...allPer.configAccountingTreatmentLookup,
             ...allPer.configAccountingPeriodDefinition,
-            ...allPer.configLedgerPeriodControl
+            ...allPer.configLedgerPeriodControl,
+            ...allPer.bondSecurity
         ]);
 
         let allPermissionIds = [], userPermissionIds = [];

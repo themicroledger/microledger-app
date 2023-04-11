@@ -5,7 +5,7 @@ const helper = require("../../../helper/helper");
 const logger = require('../../../helper/logger');
 const br = helper.baseResponse;
 const router = new express.Router();
-const uploader = require('../helper/file_uploader');
+const { bulkUploader } = require('../helper/file_uploader');
 const IbAssetModel = require('../../../models/configIbAssetClassModel');
 const PortfolioTypeModel = require('../../../models/configPortfolioTypeModel');
 const AbFrameworkModel = require('../../../models/configAbFrameworkModel');
@@ -122,7 +122,7 @@ router.post("/add", authUser, ledgerLookupMiddleware.canCreate, (req, res) => {
  *          default:
  *              description: Default response for this api
  */
-router.post("/add/bulk", authUser, ledgerLookupMiddleware.canCreate, uploader.single('file'), async (req, res) => {
+router.post("/add/bulk", authUser, ledgerLookupMiddleware.canCreate, bulkUploader.single('file'), async (req, res) => {
     await processBulkInsert(req, res, 'Ledger Lookup', insertData);
 });
 
@@ -463,7 +463,7 @@ router.put("/update/:id", authUser, ledgerLookupMiddleware.canUpdate, isValidPar
         ledgerEndDate: 'string',
         ledgerType: 'string',
         parentLedger: 'nullable',
-        ruleOrder: 'string',
+        ruleOrder: 'integer',
         comments: 'string',
     });
 
@@ -729,7 +729,7 @@ router.put("/update/:id", authUser, ledgerLookupMiddleware.canUpdate, isValidPar
                     actionItemId: configItemDetails._id,
                     action: helper.sysConst.permissionAccessTypes.EDIT,
                     actionDate: new Date(),
-                    actionBy: configItemDetails.createdByUser,
+                    actionBy: req.appCurrentUserData._id,
                 }, {session: session});
                 await auditData.save();
 
@@ -818,7 +818,7 @@ router.get("/get-all", authUser, ledgerLookupMiddleware.canRead, async (req, res
 
         if (req.query.search !== undefined && req.query.search.length > 0) {
             filter.ledgerName = {
-                $regex: '/^' + req.query.search + '/i',
+                $regex: new RegExp('^' + req.query.search, 'i'),
             }
         }
 
@@ -950,7 +950,7 @@ router.delete("/delete/:id", authUser, ledgerLookupMiddleware.canDelete, isValid
             actionItemId: configItemDetails._id,
             action: helper.sysConst.permissionAccessTypes.DELETE,
             actionDate: new Date(),
-            actionBy: configItemDetails.createdByUser,
+            actionBy: req.appCurrentUserData._id,
         }, {session: session});
         await auditData.save();
 
